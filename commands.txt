@@ -1,0 +1,3 @@
+catbag <:catbag:337104849499848706>
+!fphelp fkpyramids is a bot made by zaxutic#9935 primarily made to block pyramids. hence the name, fkpyramids. view commands with !fpcommands.
+zoomeyes <:zoomeyes:339676060280946698>
