@@ -258,7 +258,7 @@ async def on_message(message):
             await bot.send_message(chan, '{} Set game to "{}"'.format(au_mention, ' '.join(msg_parts[1:])))
             
         elif com == '!fpvoice':
-            try:
+            if len(msg_parts) >= 2:
                 if com2 == 'join':
                     if len(msg_parts) == 3:
                         v_channel = bot.get_channel(com3)
@@ -274,10 +274,8 @@ async def on_message(message):
                         if c.server == message.server:
                             await vc.disconnect()
                             await bot.send_message(chan, 'Left "{}" voice channel'.format(v_channel.name))
-            except:
-                pass
-            if len(msg_parts) == 1:
-                await bot.send_message(chan, 'Missing argument. `join`, `play`, `leave`')
+            else:
+                await bot.send_message(chan, 'Missing argument. `join`, `play`, `leave`')                
         
     if user_id in admins:
         if com == "!fpadduser" and len(msg_parts) == 2:
@@ -303,6 +301,7 @@ async def on_message(message):
             await bot.send_message(chan, '{} Removed #{} from trusted users.'.format(au_mention, user))
 
     await bot.process_commands(message)
+
 
 @bot.command(pass_context=True)
 async def fpcommands(ctx):
