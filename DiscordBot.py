@@ -124,7 +124,6 @@ async def on_message(message):
                 
         if (com == "!color" or com == "!colour") and message.server.id == "311016926925029376":
             if ((com2.startswith("#") and len(com2) == 7) or len(com2)) == 6 and len(msg_parts) == 2:
-                role_exists = False
                 if len(com2) == 7:
                     color_hex = com2[1:]
                 else:
@@ -136,9 +135,8 @@ async def on_message(message):
                 for r in message.server.roles:
                     if r.name == '#{}'.format(color_hex):
                         await bot.add_roles(message.author, r)
-                        role_exists = True
                         break
-                if not role_exists:
+                else:
                     color_role = await bot.create_role(message.server, name="#{}".format(color_hex), colour=discord.Colour(value=int(color_hex, 16)))
                     await bot.move_role(message.server, color_role, len(message.server.roles)-8)
                     await bot.add_roles(message.author, color_role)
@@ -214,14 +212,12 @@ async def on_message(message):
             roles = message.server.roles
             members = message.server.members
             for r in roles:
-                role_assigned = False
                 for u in members:
                     if r in u.roles:
-                        role_assigned = True
+                        await bot.delete_role(message.server, r)
+                        await bot.send_message(chan, "Deleted role {}.".format(r.name))
                         break
-                if role_assigned:
-                    await bot.delete_role(message.server, r)
-                    await bot.send_message(chan, "Deleted role {}.".format(r.name))
+                    
             await bot.send_message(chan, "Deleted unused roles.")
         elif com == '!fpreact' and user_id in user_list:
             num = int(com2)
