@@ -299,26 +299,32 @@ async def on_message(message):
     await bot.process_commands(message)
 
 
-@bot.command(pass_context=True)
-async def fpcommands(ctx):
+@bot.command()
+async def fpcommands():
     await bot.say("{} Commands are: {}".format(au_mention, ', '.join(commands_list.keys())))
 
-@bot.command(pass_context=True)
-async def fpusers(ctx):
+@bot.command()
+async def fpusers():
     await bot.say("{} Authorised users are: {}".format(au_mention, ', '.join(user_list)))
 
-@bot.command(pass_context=True)
-async def fpincoms(ctx):
+@bot.command()
+async def fpincoms():
     await bot.say("{} In_commands are: {}".format(au_mention, ', '.join(incoms_list.keys())))
 
-@bot.command(pass_context=True)
-async def fpmodcoms(ctx):
+@bot.command()
+async def fpmodcoms():
     await bot.say("{} Mod commands are: {}, {}".format(au_mention, ', '.join(modcoms_list), ', '.join(regmodcoms)))
 
-@bot.command(pass_context=True)
-async def nobully(ctx):
-    with open('NoBully.gif', 'rb') as f:
-        await bot.send_file(chan, f)
+@bot.command()
+async def nobully():
+    embed = discord.Embed(description="**Don't Bully!**")
+    embed.set_image(url="https://i.imgur.com/jv7O5aj.gif")
+    await bot.say(embed=embed)
 
+"""
+@bot.command
+async def fpavatar(id):
+    if id.isdigit():
+"""
 
 bot.run(token)
