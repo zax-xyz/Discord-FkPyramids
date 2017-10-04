@@ -103,12 +103,8 @@ async def on_message(message):
                         length = 0
                 if length == 3:
                     length = 0
-                    if x % 3 == 0:
-                        for i in [1,2,3,2,1]:
-                            await bot.send_message(chan, "no " * i)
-                    else:
-                        await bot.send_message(chan, "no")
-                    x += 1
+                    for i in [1,2,3,2,1]:
+                        await bot.send_message(chan, "no " * i)
             else:
                 length = 0
         else:
@@ -317,14 +313,16 @@ async def fpmodcoms():
 
 @bot.command()
 async def nobully():
-    embed = discord.Embed(description="**Don't Bully!**")
-    embed.set_image(url="https://i.imgur.com/jv7O5aj.gif")
-    await bot.say(embed=embed)
+    nobully_embed = discord.Embed(description="**Don't Bully!**")
+    nobully_embed.set_image(url="https://i.imgur.com/jv7O5aj.gif")
+    await bot.say(embed=nobully_embed)
 
 """
-@bot.command
+@bot.command()
 async def fpavatar(id):
     if id.isdigit():
+        user = bot.get_user_info(id)
+        await bot.say(user.avatar_url)
 """
 
 bot.run(token)
