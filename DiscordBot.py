@@ -17,8 +17,8 @@ commands_list = {}
 incoms_list = {}
 modcoms_list = {}
 regmodcoms = ["!pyramid", '!fpaddcom', '!fpdelcom', '!fpaddincom', '!fpdelincom', '!fpaddmodcom', '!fpdelmodcom', '!fpreact', '!s', '!fpgame', '!fpreact', '!fpwhitelist']
-admins = ['9935', '9846']
-noblock_users = ['9044']
+admins = ['135678905028706304']
+noblock_users = ['339286658061041667']
 x = 0
 
 with open("commands.txt", "r", encoding="utf-8") as commands_file, open("users.txt", "r", encoding='utf-8') as user_file, open("incoms.txt", "r", encoding='utf-8') as incoms_file, open("modcoms.txt", "r", encoding='utf-8') as modcoms_file, open("token.txt", 'r') as token_file:
@@ -43,9 +43,9 @@ with open("commands.txt", "r", encoding="utf-8") as commands_file, open("users.t
             pass
     token = token_file.readline()[:-1]
 
-def memes_loop():
+def music_loop():
     player.stop
-    player = vc.create_ffmpeg_player("Memes/{}".format(vc_queue[vc_count % len(vc_queue)], after=memes_loop()))
+    player = vc.create_ffmpeg_player("Music/{}".format(vc_queue[vc_count % len(vc_queue)], after=music_loop()))
     player.start
     vc_count += 1
 
@@ -67,7 +67,7 @@ async def on_message(message):
     global chan
     username = str(message.author)
     au_mention = message.author.mention
-    user_id = username.split('#')[-1]
+    user_id = message.author.id
     msg = str(message.content)
     msg_parts = msg.split()
     chan = message.channel
@@ -110,7 +110,7 @@ async def on_message(message):
         else:
             length = 0
 
-    if user_id != '9044':
+    if user_id != '339286658061041667':
         if com in commands_list:
             await bot.send_message(chan, commands_list[com])
         for key in incoms_list:
@@ -204,7 +204,7 @@ async def on_message(message):
                             if not line.split()[0].lower() == com2:
                                 modcoms_file.write("{}\n".format(line))
                 await bot.send_message(chan, '{} Deleted mod command "{}"'.format(au_mention, com2))
-        elif com == '!fpdelroles':
+        elif com == '!fpdelroles':  # doesn't work
             roles = message.server.roles
             members = message.server.members
             for r in roles:
@@ -259,8 +259,7 @@ async def on_message(message):
                     vc = await bot.join_voice_channel(v_channel)
                     await bot.send_message(chan, 'Joined "{}" voice channel'.format(v_channel.name))
                 elif com2 == 'play':
-                    if com2 == 'memes':
-                        memes_loop()
+                    music_loop()
                 elif com2 == 'leave':
                     for c in bot.voice_clients:
                         if c.server == message.server:
