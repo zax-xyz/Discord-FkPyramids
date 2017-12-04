@@ -1,0 +1,2 @@
+!fphelp FkPyramids is a bot primarily made to block pyramids. View commands with !fpcommands, !fpincoms and !fpmodcoms.
+
