@@ -3,6 +3,7 @@ from discord.ext import commands
 import asyncio
 import os
 import datetime
+import time
 
 
 if not discord.opus.is_loaded():
@@ -20,6 +21,7 @@ regmodcoms = ["!pyramid", '!fpaddcom', '!fpdelcom', '!fpaddincom', '!fpdelincom'
 admins = ['135678905028706304']
 noblock_users = ['339286658061041667']
 x = 0
+cooldown = 0
 
 with open("commands.txt", "r", encoding="utf-8") as commands_file, open("users.txt", "r", encoding='utf-8') as user_file, open("incoms.txt", "r", encoding='utf-8') as incoms_file, open("modcoms.txt", "r", encoding='utf-8') as modcoms_file, open("token.txt", 'r') as token_file:
     for line in commands_file:
@@ -65,6 +67,7 @@ async def on_message(message):
     global au_mention
     global user_id
     global chan
+    global cooldown
     username = str(message.author)
     au_mention = message.author.mention
     user_id = message.author.id
@@ -113,10 +116,12 @@ async def on_message(message):
     if user_id != '339286658061041667':
         if com in commands_list:
             await bot.send_message(chan, commands_list[com])
-        for key in incoms_list:
-            if key in msg.lower():
-                await bot.send_message(chan, incoms_list[key])
-                break
+        elif time.time() - cooldown > 30:
+            for key in incoms_list:
+                if key in msg.lower():
+                    await bot.send_message(chan, incoms_list[key])
+                    break
+            cooldown = time.time()
                 
         if (com == "!color" or com == "!colour") and message.server.id == "311016926925029376":
             if ((com2.startswith("#") and len(com2) == 7) or len(com2)) == 6 and len(msg_parts) == 2:
@@ -140,7 +145,7 @@ async def on_message(message):
             else:
                 await bot.send_message(chan, "{} Syntax: `{} [{} hex code]`".format(au_mention, com, com[1:]))
 
-    if user_id in user_list:
+    if user_id in user_list or user_id in admins:
         if com == "!pyramid" and len(msg_parts) >= 3:
             p = "{} ".format(' '.join(msg_parts[2:]))
             p_len = int(com2) + 1
@@ -276,10 +281,10 @@ async def on_message(message):
             with open("users.txt", "a", encoding='utf-8') as user_file:
                 user_file.write("{}".format('\n'.join(users)))
                 user_list.append('\n'.join(users))
-            await bot.send_message(chan, '{} Added #{} to trusted user list'.format(au_mention, ', '.join(users)))
+            await bot.send_message(chan, '{} Added {} to trusted user list'.format(au_mention, ', '.join(users)))
         elif com == "!fpdeluser":
             if message.mentions:
-                user = str(message.mentions[0].discriminator)
+                user = message.mentions[0].id
             else:
                 user = com2
             user_list.remove(user)
@@ -289,7 +294,7 @@ async def on_message(message):
                 for line in lines:
                     if line != user:
                         user_file.write(line)
-            await bot.send_message(chan, '{} Removed #{} from trusted users.'.format(au_mention, user))
+            await bot.send_message(chan, '{} Removed {} from trusted users.'.format(au_mention, user))
 
     await bot.process_commands(message)
 
