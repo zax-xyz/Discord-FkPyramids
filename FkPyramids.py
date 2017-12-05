@@ -153,6 +153,13 @@ async def on_message(message):
                 await bot.send_message(chan, p * i)
             for i in range(2, p_len):
                 await bot.send_message(chan, p * (p_len - i))
+        elif com == "!delmsg":
+            if com2.isdigit():
+                async for m in bot.logs_from(chan, com2):
+                    await bot.delete_message(m)
+            elif com2 == 'all':
+                async for m in bot.logs_from(chan):
+                    await bot.delete_message(m)
         elif com == "!fpaddcom":
             if len(msg_parts) >= 3:
                 with open("commands.txt", "a", encoding="utf-8") as commands_file:
@@ -271,7 +278,7 @@ async def on_message(message):
                             await vc.disconnect()
                             await bot.send_message(chan, 'Left "{}" voice channel'.format(v_channel.name))
             else:
-                await bot.send_message(chan, 'Missing argument. `join`, `play`, `leave`')                
+                await bot.send_message(chan, 'Missing argument. `join`, `play`, `leave`')
         
     if user_id in admins:
         if com == "!fpadduser" and len(msg_parts) == 2:
