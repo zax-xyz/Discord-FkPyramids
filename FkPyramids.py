@@ -74,7 +74,7 @@ async def on_message(message):
     msg = str(message.content)
     msg_parts = msg.split()
     chan = message.channel
-    print('{}  {}: {}'.format("{:%H:%M:%S} ".format(datetime.datetime.now()), username, msg))
+    print('{} {}: {}'.format("{:%H:%M:%S} ".format(datetime.datetime.now()), username, msg))
     try:
         com = msg_parts[0].lower()
     except:
@@ -157,9 +157,6 @@ async def on_message(message):
             if com2.isdigit():
                 com2 = int(com2)
                 async for m in bot.logs_from(chan, com2):
-                    await bot.delete_message(m)
-            elif com2 == 'all':
-                async for m in bot.logs_from(chan):
                     await bot.delete_message(m)
         elif com == "!fpaddcom":
             if len(msg_parts) >= 3:
