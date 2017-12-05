@@ -13,7 +13,7 @@ Client = discord.Client()
 bot = commands.Bot(command_prefix="!")
 length = 0
 vc_count = 0
-vc_queue = [filename for filename in os.listdir('Memes')]
+vc_queue = [filename for filename in os.listdir('Music')]
 commands_list = {}
 incoms_list = {}
 modcoms_list = {}
