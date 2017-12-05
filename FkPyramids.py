@@ -155,6 +155,7 @@ async def on_message(message):
                 await bot.send_message(chan, p * (p_len - i))
         elif com == "!delmsg":
             if com2.isdigit():
+                com2 = int(com2)
                 async for m in bot.logs_from(chan, com2):
                     await bot.delete_message(m)
             elif com2 == 'all':
