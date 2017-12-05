@@ -1,3 +1,2 @@
 bully <:NoBully:343932637661888534>
-
 color colour*
