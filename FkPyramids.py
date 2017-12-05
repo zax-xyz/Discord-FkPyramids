@@ -158,8 +158,13 @@ async def on_message(message):
                 async for m in bot.logs_from(chan, com2):
                     await bot.delete_message(m)
             elif com2 == 'all':
-                async for m in bot.logs_from(chan):
-                    await bot.delete_message(m)
+                while True:
+                    try:
+                        async for m in bot.logs_from(chan):
+                            await bot.delete_message(m)
+                    except:
+                        async bot.send_message(chan, "Deleted all messages")
+                        pass
         elif com == "!fpaddcom":
             if len(msg_parts) >= 3:
                 with open("commands.txt", "a", encoding="utf-8") as commands_file:
