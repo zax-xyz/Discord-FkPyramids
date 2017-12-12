@@ -56,7 +56,7 @@ async def on_ready():
 async def on_message(message):
     global x
     global vc_count
-    global vc
+    global voice
     global v_channel
     global au_mention
     global user_id
