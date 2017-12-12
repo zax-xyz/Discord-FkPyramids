@@ -261,16 +261,15 @@ async def on_message(message):
                         v_channel = bot.get_channel(com3)
                     elif len(msg_parts) == 2:
                         v_channel = message.author.voice_channel
-                    vc = await bot.join_voice_channel(v_channel)
+                    voice = await bot.join_voice_channel(v_channel)
                     await bot.send_message(chan, 'Joined "{}" voice channel'.format(v_channel.name))
                 elif com2 == 'play':
-                    player = vc.create_ffmpeg_player("Music/{}".format(vc_queue[vc_count % len(vc_queue)]))
+                    player = voice.create_ffmpeg_player("Music/We Are Number One but it's the Night of Nights.mp3")
                     player.start
-                    vc_count += 1
                 elif com2 == 'leave':
                     for c in bot.voice_clients:
                         if c.server == message.server:
-                            await vc.disconnect()
+                            await voice.disconnect()
                             await bot.send_message(chan, 'Left "{}" voice channel'.format(v_channel.name))
             else:
                 await bot.send_message(chan, 'Missing argument. `join`, `play`, `leave`')
