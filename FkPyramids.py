@@ -47,8 +47,7 @@ with open("commands.txt", "r", encoding="utf-8") as commands_file, open("users.t
 
 def music_loop():
     global player
-    player.stop
-    player = vc.create_ffmpeg_player("Music/{}".format(vc_queue[vc_count % len(vc_queue)], after=music_loop()))
+    player = vc.create_ffmpeg_player("Music/{}".format(vc_queue[vc_count % len(vc_queue)]))
     player.start
     vc_count += 1
 
