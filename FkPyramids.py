@@ -45,12 +45,6 @@ with open("commands.txt", "r", encoding="utf-8") as commands_file, open("users.t
             pass
     token = token_file.readline()[:-1]
 
-def music_loop():
-    global player
-    player = vc.create_ffmpeg_player("Music/{}".format(vc_queue[vc_count % len(vc_queue)]))
-    player.start
-    vc_count += 1
-
 
 @bot.event
 async def on_ready():
@@ -68,6 +62,7 @@ async def on_message(message):
     global user_id
     global chan
     global cooldown
+    global player
     username = str(message.author)
     au_mention = message.author.mention
     user_id = message.author.id
@@ -269,7 +264,9 @@ async def on_message(message):
                     vc = await bot.join_voice_channel(v_channel)
                     await bot.send_message(chan, 'Joined "{}" voice channel'.format(v_channel.name))
                 elif com2 == 'play':
-                    music_loop()
+                    player = vc.create_ffmpeg_player("Music/{}".format(vc_queue[vc_count % len(vc_queue)]))
+                    player.start
+                    vc_count += 1
                 elif com2 == 'leave':
                     for c in bot.voice_clients:
                         if c.server == message.server:
