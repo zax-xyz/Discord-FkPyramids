@@ -283,7 +283,7 @@ async def on_message(message):
                     player = voice.create_ffmpeg_player("We Are Number One but it's the Night of Nights.mp3")
                     player.start
             else:
-                await bot.send_message(chan, 'Missing argument. `join`, `play`, `leave`')
+                await bot.send_message(chan, 'Missing argument: `join`, `play`, `leave`')
         
     if user_id in admins:
         if com == "!fpadduser" and len(msg_parts) == 2:
