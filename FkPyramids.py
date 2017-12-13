@@ -280,7 +280,7 @@ async def on_message(message):
                             await bot.send_message(chan, 'Left "{}" voice channel'.format(v_channel.name))
                 elif com2 == 'test':
                     voice = await bot.join_voice_channel(v_channel)
-                    player = voice.create_ffmpeg_player("Music/We Are Number One but it's the Night of Nights.mp3")
+                    player = voice.create_ffmpeg_player("We Are Number One but it's the Night of Nights.mp3")
                     player.start
             else:
                 await bot.send_message(chan, 'Missing argument. `join`, `play`, `leave`')
