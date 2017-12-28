@@ -287,12 +287,12 @@ async def on_message(message):
         
     if user_id in admins:
         if com == "!fpadduser" and len(msg_parts) == 2:
-            users = [str(u.discriminator) for u in message.mentions]
+            users = [str(u.id) for u in message.mentions]
             if not users:
                 users = msg_parts[1:]
             with open("users.txt", "a", encoding='utf-8') as user_file:
-                user_file.write("{}".format('\n'.join(users)))
-                user_list.append('\n'.join(users))
+                user_file.write("{}\n".format('\n'.join(users)))
+                user_list.append('\n'.join(users))  # fix later
             await bot.send_message(chan, '{} Added {} to trusted user list'.format(au_mention, ', '.join(users)))
         elif com == "!fpdeluser":
             if message.mentions:
@@ -304,7 +304,7 @@ async def on_message(message):
                 lines = f.readlines()
             with open("users.txt", "w", encoding='utf-8') as user_file:
                 for line in lines:
-                    if line != user:
+                    if line[:-1] != user:
                         user_file.write(line)
             await bot.send_message(chan, '{} Removed {} from trusted users.'.format(au_mention, user))
 
