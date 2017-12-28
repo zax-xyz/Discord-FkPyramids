@@ -219,7 +219,7 @@ async def on_message(message):
                         break
                     
             await bot.send_message(chan, "Deleted unused roles.")
-        elif com == '!fpreact' and user_id in user_list:
+        elif com == '!fpreact':
             num = int(com2)
             if com3.isdigit():
                 for em in bot.get_all_emojis():
@@ -234,7 +234,7 @@ async def on_message(message):
                     async for i in bot.logs_from(chan, limit=num):
                         await bot.add_reaction(i, e[2:-1])
                 except:
-                    await bot.send_message(chan, '{} Syntax: `!fpreact [emote/emote id]`'.format(au_mention))
+                    await bot.send_message(chan, '{} Syntax: `!fpreact [messages] [emote/emote id]`'.format(au_mention))
         elif com == '!fpwhitelist':
             if com2.isdigit():
                 noblock_users.append(com2)
