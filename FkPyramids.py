@@ -87,25 +87,45 @@ async def on_message(message):
         pass
     global length
     global py_part
-    if user_id not in noblock_users and user_id != message.server.owner.id:
-        if len(msg_parts) == 1:
-            if len(msg_parts) == length - 1 and msg == py_part:
-                await bot.send_message(chan, "Baby pyramids don't count, you fucking degenerate. {}".format(au_mention))
-            py_part = msg
-            length = 1
-        elif len(msg_parts) == 1 + length:
-            length += 1
-            for part in msg_parts:
-                if part != py_part:
+    if chan.is_private:
+        if user_id != '339286658061041667':
+            if len(msg_parts) == 1:
+                if len(msg_parts) == length - 1 and msg == py_part:
+                    await bot.send_message(chan, "Baby pyramids don't count, you fucking degenerate. {}".format(au_mention))
+                py_part = msg
+                length = 1
+            elif len(msg_parts) == 1 + length:
+                length += 1
+                for part in msg_parts:
+                    if part != py_part:
+                        length = 0
+                if length == 3:
                     length = 0
-            if length == 3:
+                    await bot.send_message(chan, "no")
+            else:
                 length = 0
-                for i in [1,2,3,2,1]:
-                    await bot.send_message(chan, "no " * i)
         else:
             length = 0
     else:
-        length = 0
+        if user_id not in noblock_users and user_id != message.server.owner.id:
+            if len(msg_parts) == 1:
+                if len(msg_parts) == length - 1 and msg == py_part:
+                    await bot.send_message(chan, "Baby pyramids don't count, you fucking degenerate. {}".format(au_mention))
+                py_part = msg
+                length = 1
+            elif len(msg_parts) == 1 + length:
+                length += 1
+                for part in msg_parts:
+                    if part != py_part:
+                        length = 0
+                if length == 3:
+                    length = 0
+                    for i in [1,2,3,2,1]:
+                        await bot.send_message(chan, "no " * i)
+            else:
+                length = 0
+        else:
+            length = 0
 
     if user_id != '339286658061041667':
         if com in commands_list:
