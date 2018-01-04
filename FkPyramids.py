@@ -107,7 +107,7 @@ async def on_message(message):
         else:
             length = 0
         if user_id == '135678905028706304':
-            if com = '!send':
+            if com == '!send':
                 if len(msg_parts) >= 3:
                     await bot.send_message(get_channel(com2), ' '.join(msg_parts[2:]))
     else:
