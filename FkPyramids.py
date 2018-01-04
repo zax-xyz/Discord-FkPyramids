@@ -109,7 +109,7 @@ async def on_message(message):
         if user_id == '135678905028706304':
             if com == '!send':
                 if len(msg_parts) >= 3:
-                    await bot.send_message(get_channel(com2), ' '.join(msg_parts[2:]))
+                    await bot.send_message(bot.get_channel(com2), ' '.join(msg_parts[2:]))
     else:
         if user_id not in noblock_users and user_id != message.server.owner.id:
             if len(msg_parts) == 1:
