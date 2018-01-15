@@ -45,6 +45,11 @@ with open("commands.txt", "r", encoding="utf-8") as commands_file, open("users.t
             pass
     token = token_file.readline()[:-1]
 
+async def pyNumbers(length):
+    for i in range(1, length):
+        yield i
+    for i in range(2, length):
+        yield length - i
 
 @bot.event
 async def on_ready():
@@ -167,10 +172,8 @@ async def on_message(message):
         if com == "!pyramid" and len(msg_parts) >= 3:
             p = "{} ".format(' '.join(msg_parts[2:]))
             p_len = int(com2) + 1
-            for i in range(1, p_len):
+            async for i in pyNumbers(p_len):
                 await bot.send_message(chan, p * i)
-            for i in range(2, p_len):
-                await bot.send_message(chan, p * (p_len - i))
         elif com == "!delmsg":
             if com2.isdigit():
                 com2 = int(com2)
