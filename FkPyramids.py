@@ -70,7 +70,7 @@ async def pyBlock(bbyPyBlock, lst):
                     await bot.send_message(chan, "no")
                 del Channels[chanId]
     else:
-        del Users[userId]
+        del Channels[userId]
 
 @bot.event
 async def on_ready():
