@@ -4,24 +4,29 @@ import asyncio
 import os
 import datetime
 import time
+import logging
 
+Owner = '135678905028706304'  # Put your user ID here
+
+logger = logging.getLogger('discord')
+handler = logging.FileHandler(filename='discord.log', encoding='utf-8', mode='w')
+handler.setFormatter(logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
+logger.addHandler(handler)
 
 if not discord.opus.is_loaded():
     discord.opus.load_opus('libopus.so.0.6.1')
 
 Client = discord.Client()
 bot = commands.Bot(command_prefix="!")
-length = 0
 vcCount = 0
 vcQueue = [filename for filename in os.listdir('Music')]
 commandsList = {}
 incomsList = {}
 modcomsList = {}
 regmodcoms = ["!pyramid", '!fpaddcom', '!fpdelcom', '!fpaddincom', '!fpdelincom', '!fpaddmodcom', '!fpdelmodcom', '!fpreact', '!s', '!fpgame', '!fpreact', '!fpwhitelist']
-admins = ['135678905028706304']
-noblockUsers = ['339286658061041667']
-x = 0
+admins = [Owner]
 cooldown = 0
+Channels = {}
 
 with open("commands.txt", "r", encoding="utf-8") as commandsFile, open("users.txt", "r", encoding='utf-8') as userFile, open("incoms.txt", "r", encoding='utf-8') as incomsFile, open("modcoms.txt", "r", encoding='utf-8') as modcomsFile, open("token.txt", 'r') as tokenFile:
     for line in commandsFile:
@@ -45,19 +50,38 @@ with open("commands.txt", "r", encoding="utf-8") as commandsFile, open("users.tx
             pass
     token = tokenFile.readline()[:-1]
 
-async def pyNum():
-    for i in [1,2,3,2,1]:
-        yield i
+async def pyBlock(bbyPyBlock, lst):
+    x = 1
+    if len(msgParts) == 1:
+        if len(msgParts) == Channels[chanId]['len'] - 1 and msg == Channels[chanId]['py']:
+            await bot.send_message(chan, "Baby pyramids don't count, you fucking degenerate. {}".format(bbyPyBlock))
+        Channels[chanId]['py'] = msg
+        Channels[chanId]['len'] = 1
+    elif len(msgParts) == 1 + Channels[chanId]['len']:
+        Channels[chanId]['len'] += 1
+        for part in msgParts:
+            if part != Channels[chanId]['py']:
+                del Channels[chanId]
+                x = 0
+                break
+        if x:
+            if Channels[chanId]['len'] == 3:
+                for i in lst:
+                    await bot.send_message(chan, "no")
+                del Channels[chanId]
+    else:
+        del Users[userId]
 
 @bot.event
 async def on_ready():
+    global noBlockUsers
     print("{} Bot Online".format("{:%H:%M:%S} ".format(datetime.datetime.now())))
     print("Name: {}".format(bot.user.name))
     print("ID: {}".format(bot.user.id))
+    noBlockUsers = [bot.user.id]
 
 @bot.event
 async def on_message(message):
-    global x
     global vcCount
     global voice
     global vChannel
@@ -72,6 +96,7 @@ async def on_message(message):
     msg = str(message.content)
     msgParts = msg.split()
     chan = message.channel
+    chanId = chan.id
     print('{} {}: {}'.format("{:%H:%M:%S} ".format(datetime.datetime.now()), username, msg))
     try:
         com = msgParts[0].lower()
@@ -88,53 +113,26 @@ async def on_message(message):
     except:
         com3 = None
         pass
-    global length
-    global pyPart
     if chan.is_private:
-        if userId != '339286658061041667':
-            if len(msgParts) == 1:
-                if len(msgParts) == length - 1 and msg == pyPart:
-                    await bot.send_message(chan, "Baby pyramids don't count, you fucking degenerate. {}".format(auMention))
-                pyPart = msg
-                length = 1
-            elif len(msgParts) == 1 + length:
-                length += 1
-                for part in msgParts:
-                    if part != pyPart:
-                        length = 0
-                if length == 3:
-                    length = 0
-                    await bot.send_message(chan, "no")
-            else:
-                length = 0
-        else:
-            length = 0
-        if userId == '135678905028706304':
+        if chanId in Channels:
+            pyBlock('', [1])
+        elif len(msgParts) == 1:
+            Channels[chanId] = {'len': 1, 'py': msg}
+
+        if userId == Owner:
             if com == '!send':
                 if len(msgParts) >= 3:
                     await bot.send_message(bot.get_channel(com2), ' '.join(msgParts[2:]))
     else:
-        if userId not in noblockUsers and userId != message.server.owner.id:
-            if len(msgParts) == 1:
-                if len(msgParts) == length - 1 and msg == pyPart:
-                    await bot.send_message(chan, "Baby pyramids don't count, you fucking degenerate. {}".format(auMention))
-                pyPart = msg
-                length = 1
-            elif len(msgParts) == 1 + length:
-                length += 1
-                for part in msgParts:
-                    if part != pyPart:
-                        length = 0
-                if length == 3:
-                    length = 0
-                    async for i in pyNum():
-                        await bot.send_message(chan, "no " * i)
+        if chanId in Channels:
+            if userId not in noBlockUsers and userId != message.server.owner.id:
+                pyBlock(auMention, [1,2,3,2,1])
             else:
-                length = 0
-        else:
-            length = 0
+                del Channels[chanId]
+        elif len(msgParts) == 1:
+            Channels[chanId] = {'len': 1, 'py': msg}
 
-    if userId != '339286658061041667':
+    if userId != bot.user.id:
         if com in commandsList:
             await bot.send_message(chan, commandsList[com])
         elif time.time() - cooldown > 30:
@@ -165,6 +163,18 @@ async def on_message(message):
                 await bot.send_message(chan, "{} Set colour to #{}".format(auMention, colorHex))
             else:
                 await bot.send_message(chan, "{} Syntax: `{} [{} hex code]`".format(auMention, com, com[1:]))
+        elif com == '!fpcommands':
+            await bot.send_message(chan, "{} Commands are: {}".format(auMention, ', '.join(commandsList.keys())))
+        elif com == '!fpusers':
+            await bot.send_message(chan, "{} Authorised users are: {}".format(auMention, ', '.join(userList)))
+        elif com == '!fpincoms':
+            await bot.send_message(chan, "{} In_commands are: {}".format(auMention, ', '.join(incomsList.keys())))
+        elif com == '!fpmodcoms':
+            await bot.send_message(chan, "{} Mod commands are: {}, {}".format(auMention, ', '.join(modcomsList), ', '.join(regmodcoms)))
+        elif com == '!nobully':
+            nobullyEmbed = discord.Embed(description="**Don't Bully!**")
+            nobullyEmbed.set_image(url="https://i.imgur.com/jv7O5aj.gif")
+            await bot.send_message(chan, embed=nobullyEmbed)
 
     if userId in userList or userId in admins:
         if com == "!pyramid" and len(msgParts) >= 3:
@@ -264,13 +274,13 @@ async def on_message(message):
                     await bot.send_message(chan, '{} Syntax: `!fpreact [messages] [emote/emote id]`'.format(auMention))
         elif com == '!fpwhitelist':
             if com2.isdigit():
-                noblockUsers.append(com2)
+                noBlockUsers.append(com2)
             else:
                 await bot.send_message(chan, '{} Syntax: `!fpwhitelist [user id]`'.format(auMention))
         elif com == '!fpblacklist':
             if com2.isdigit():
-                if com2 in noblockUsers:
-                    noblockUsers.remove(com2)
+                if com2 in noBlockUsers:
+                    noBlockUsers.remove(com2)
                 else:
                     await bot.send_message(chan, '{} {} is not whitelisted'.format(auMention, com2))
             else:
@@ -334,38 +344,8 @@ async def on_message(message):
                     if line[:-1] != user:
                         userFile.write(line)
             await bot.send_message(chan, '{} Removed {} from trusted users.'.format(auMention, user))
-
-    await bot.process_commands(message)
-
-
-@bot.command()
-async def fpcommands():
-    await bot.say("{} Commands are: {}".format(auMention, ', '.join(commandsList.keys())))
-
-@bot.command()
-async def fpusers():
-    await bot.say("{} Authorised users are: {}".format(auMention, ', '.join(userList)))
-
-@bot.command()
-async def fpincoms():
-    await bot.say("{} In_commands are: {}".format(auMention, ', '.join(incomsList.keys())))
-
-@bot.command()
-async def fpmodcoms():
-    await bot.say("{} Mod commands are: {}, {}".format(auMention, ', '.join(modcomsList), ', '.join(regmodcoms)))
-
-@bot.command()
-async def nobully():
-    nobullyEmbed = discord.Embed(description="**Don't Bully!**")
-    nobullyEmbed.set_image(url="https://i.imgur.com/jv7O5aj.gif")
-    await bot.say(embed=nobullyEmbed)
-
-"""
-@bot.command()
-async def fpavatar(id):
-    if id.isdigit():
-        user = bot.get_user_info(id)
-        await bot.say(user.avatar_url)
-"""
+        elif com == "!fpshutdown":
+            await bot.send_message(chan, 'Shutting down client.')
+            await bot.close()
 
 bot.run(token)
