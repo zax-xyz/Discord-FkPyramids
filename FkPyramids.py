@@ -143,7 +143,7 @@ async def on_message(message):
             cooldown = time.time()
                 
         if (com == "!color" or com == "!colour") and message.server.id == "311016926925029376":
-            if ((com2.startswith("#") and len(com2) == 7) or len(com2)) == 6 and len(msgParts) == 2:
+            if ((com2.startswith("#") and len(com2) == 7) or len(com2) == 6) and len(msgParts) == 2:
                 if len(com2) == 7:
                     colorHex = com2[1:]
                 else:
@@ -245,15 +245,20 @@ async def on_message(message):
                             if not line.split()[0].lower() == com2:
                                 modcomsFile.write("{}\n".format(line))
                 await bot.send_message(chan, '{} Deleted mod command "{}"'.format(auMention, com2))
-        elif com == '!fpdelroles':  # doesn't work
+        elif com == '!fpdelroles':
             roles = message.server.roles
             members = message.server.members
+            usedRoles = []
             for r in roles:
                 for u in members:
                     if r in u.roles:
-                        await bot.delete_role(message.server, r)
-                        await bot.send_message(chan, "Deleted role {}.".format(r.name))
+                        usedRoles.append(r)
                         break
+            for r in usedRoles:
+                roles.remove(r)
+            for r in roles:
+                await bot.delete_role(message.server, r)
+                await bot.send_message(chan, "Deleted role {}.".format(r.name))
                     
             await bot.send_message(chan, "Deleted unused roles.")
         elif com == '!fpreact':
