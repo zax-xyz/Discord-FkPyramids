@@ -18,8 +18,6 @@ if not discord.opus.is_loaded():
 
 Client = discord.Client()
 bot = commands.Bot(command_prefix="!")
-vcCount = 0
-vcQueue = [filename for filename in os.listdir('Music')]
 commandsList = {}
 incomsList = {}
 modcomsList = {}
@@ -72,24 +70,27 @@ async def pyBlock(bbyPyBlock, lst):
     else:
         del Channels[userId]
 
+def currentTime():
+    t = datetime.datetime.now()
+    return "{:%H:%M:%S} ".format(t)
+
 @bot.event
 async def on_ready():
     global noBlockUsers
-    print("{} Bot Online".format("{:%H:%M:%S} ".format(datetime.datetime.now())))
+    print("{} Bot Online".format(currentTime()))
     print("Name: {}".format(bot.user.name))
     print("ID: {}".format(bot.user.id))
     noBlockUsers = [bot.user.id]
+    await bot.change_presence(game=discord.Game(name='NoBully'))
 
 @bot.event
 async def on_message(message):
-    global vcCount
     global voice
     global vChannel
     global auMention
     global userId
     global chan
     global cooldown
-    global player
     username = str(message.author)
     auMention = message.author.mention
     userId = message.author.id
@@ -97,23 +98,17 @@ async def on_message(message):
     msgParts = msg.split()
     chan = message.channel
     chanId = chan.id
-    print('{} {}: {}'.format("{:%H:%M:%S} ".format(datetime.datetime.now()), username, msg))
+    print('{} {}: {}'.format(currentTime(), username, msg))
+    com = None
+    com2 = None
+    com3 = None
     try:
         com = msgParts[0].lower()
-    except:
-        com = None
-        pass
-    try:
         com2 = msgParts[1].lower()
-    except:
-        com2 = None
-        pass
-    try:
         com3 = msgParts[2]
     except:
-        com3 = None
         pass
-    if chan.is_private:
+    if chan.is_private:  # DMs
         if chanId in Channels:
             pyBlock('', [1])
         elif len(msgParts) == 1:
@@ -141,26 +136,23 @@ async def on_message(message):
                     await bot.send_message(chan, incomsList[key])
                     break
             cooldown = time.time()
-                
-        if (com == "!color" or com == "!colour") and message.server.id == "311016926925029376":
-            if ((com2.startswith("#") and len(com2) == 7) or len(com2) == 6) and len(msgParts) == 2:
-                if len(com2) == 7:
-                    colorHex = com2[1:]
-                else:
-                    colorHex = com2
-                await bot.send_message(chan, "{} Setting color to #{}".format(auMention, colorHex))
-                for r in message.author.roles:
-                    if r.name.startswith('#'):
-                        await bot.remove_roles(message.author, r)
-                for r in message.server.roles:
-                    if r.name == '#{}'.format(colorHex):
-                        await bot.add_roles(message.author, r)
-                        break
-                else:
-                    colorRole = await bot.create_role(message.server, name="#{}".format(colorHex), colour=discord.Colour(value=int(colorHex, 16)))
-                    await bot.move_role(message.server, colorRole, len(message.server.roles)-8)
-                    await bot.add_roles(message.author, colorRole)
-                await bot.send_message(chan, "{} Set colour to #{}".format(auMention, colorHex))
+        if (com == "!color" or com == "!colour") and message.server.id == "311016926925029376":  # Requires "Manage Roles" permission
+            if com2:
+                colorHex = com2.strip('#')
+                if colorHex.isdigit():
+                    await bot.send_message(chan, "{} Setting color to #{}".format(auMention, colorHex))
+                    for r in message.author.roles:
+                        if r.name.startswith('#'):
+                            await bot.remove_roles(message.author, r)
+                    for r in message.server.roles:
+                        if r.name == '#{}'.format(colorHex):
+                            await bot.add_roles(message.author, r)
+                            break
+                    else:
+                        colorRole = await bot.create_role(message.server, name="#{}".format(colorHex), colour=discord.Colour(value=int(colorHex, 16)))
+                        await bot.move_role(message.server, colorRole, len(message.server.roles)-8)
+                        await bot.add_roles(message.author, colorRole)
+                    await bot.send_message(chan, "{} Set colour to #{}".format(auMention, colorHex))
             else:
                 await bot.send_message(chan, "{} Syntax: `{} [{} hex code]`".format(auMention, com, com[1:]))
         elif com == '!fpcommands':
@@ -176,7 +168,7 @@ async def on_message(message):
             nobullyEmbed.set_image(url="https://i.imgur.com/jv7O5aj.gif")
             await bot.send_message(chan, embed=nobullyEmbed)
 
-    if userId in userList or userId in admins:
+    if userId in userList + admins:
         if com == "!pyramid" and len(msgParts) >= 3:
             p = "{} ".format(' '.join(msgParts[2:]))
             pLen = int(com2) + 1
@@ -184,7 +176,7 @@ async def on_message(message):
                 await bot.send_message(chan, p * i)
             for i in range(2, pLen):
                 await bot.send_message(chan, p * (pLen - i))
-        elif com == "!delmsg":
+        elif com == "!delmsg":  # Requires "Manage Messages" permission
             if com2.isdigit():
                 com2 = int(com2)
                 async for m in bot.logs_from(chan, com2):
@@ -245,21 +237,26 @@ async def on_message(message):
                             if not line.split()[0].lower() == com2:
                                 modcomsFile.write("{}\n".format(line))
                 await bot.send_message(chan, '{} Deleted mod command "{}"'.format(auMention, com2))
-        elif com == '!fpdelroles':
+        elif com == '!fpdelroles':  # Requires "Manage Roles" permission
+            # Doesn't usually delete all roles at once, requires multiple executions
+
             roles = message.server.roles
             members = message.server.members
+            # print("Roles: {}".format(len(roles)))  # Debugging
+            # print("Roles: {}".format(', '.join([r.name for r in roles])))  # Debugging
             usedRoles = []
             for r in roles:
                 for u in members:
                     if r in u.roles:
                         usedRoles.append(r)
                         break
+            # print("Used: {}".format(', '.join([r.name for r in usedRoles])))  # Debugging
             for r in usedRoles:
                 roles.remove(r)
+            # print("Unused: {}".format(', '.join([r.name for r in roles])))  # Debugging
             for r in roles:
                 await bot.delete_role(message.server, r)
                 await bot.send_message(chan, "Deleted role {}.".format(r.name))
-                    
             await bot.send_message(chan, "Deleted unused roles.")
         elif com == '!fpreact':
             num = int(com2)
@@ -293,17 +290,14 @@ async def on_message(message):
                 
         if com in modcomsList:
             await bot.send_message(chan, modcomsList[com])
-        
         elif com == "!s" and len(msgParts) >= 3:
             n = int(com2)
             for i in range(n):
                 await bot.send_message(chan, ' '.join(msgParts[2:]))
-                await asyncio.sleep(1)
         elif com == "!fpgame":
             await bot.change_presence(game=discord.Game(name=' '.join(msgParts[1:])))
             await bot.send_message(chan, '{} Set game to "{}"'.format(auMention, ' '.join(msgParts[1:])))
-            
-        elif com == '!fpvoice':
+        elif com == '!fpvoice':  # Incomplete
             if len(msgParts) >= 2:
                 if com2 == 'join':
                     if len(msgParts) == 3:
@@ -312,20 +306,13 @@ async def on_message(message):
                         vChannel = message.author.voice_channel
                     voice = await bot.join_voice_channel(vChannel)
                     await bot.send_message(chan, 'Joined "{}" voice channel'.format(vChannel.name))
-                elif com2 == 'play':
-                    player = voice.create_ffmpeg_player("Music/We Are Number One but it's the Night of Nights.mp3")
-                    player.start
                 elif com2 == 'leave':
                     for c in bot.voice_clients:
                         if c.server == message.server:
                             await voice.disconnect()
                             await bot.send_message(chan, 'Left "{}" voice channel'.format(vChannel.name))
-                elif com2 == 'test':
-                    voice = await bot.join_voice_channel(vChannel)
-                    player = voice.create_ffmpeg_player("We Are Number One but it's the Night of Nights.mp3")
-                    player.start
             else:
-                await bot.send_message(chan, 'Missing argument: `join`, `play`, `leave`')
+                await bot.send_message(chan, 'Missing argument: `join`, `leave`')
         
     if userId in admins:
         if com == "!fpadduser" and len(msgParts) == 2:
@@ -334,7 +321,8 @@ async def on_message(message):
                 users = msgParts[1:]
             with open("users.txt", "a", encoding='utf-8') as userFile:
                 userFile.write("{}\n".format('\n'.join(users)))
-                userList.append('\n'.join(users))  # fix later
+                for u in users:
+                    userList.append(u)
             await bot.send_message(chan, '{} Added {} to trusted user list'.format(auMention, ', '.join(users)))
         elif com == "!fpdeluser":
             if message.mentions:
@@ -352,5 +340,6 @@ async def on_message(message):
         elif com == "!fpshutdown":
             await bot.send_message(chan, 'Shutting down client.')
             await bot.close()
+            print("{} Bot shutdown.".format(currentTime()))
 
 bot.run(token)
