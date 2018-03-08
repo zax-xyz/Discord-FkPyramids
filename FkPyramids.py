@@ -184,7 +184,8 @@ async def on_message(message):
                         break
 
                 if isHex:
-                    await channel.send(mention, "Setting color to #" + colorHex)
+                    await channel.send(
+                        "{} Setting color to #{}".format(mention, colorHex))
                     for r in message.author.roles:
                         if r.name.startswith('#'):
                             await message.author.remove_roles(r)
@@ -206,15 +207,15 @@ async def on_message(message):
                 await channel.send("{} Syntax: `{} [{} hex code]`".
                     format(mention, com, com[1:]))
         elif com == '!fpcommands':
-            await channel.send(mention, "Commands:", 
+            await channel.send(mention + " Commands: " +
                 ', '.join(commandsList.keys()))
         elif com == '!fpadmins':
-            await channel.send(mention, "Admins:", ', '.join(userList))
+            await channel.send(mention +  " Admins: " + ', '.join(userList))
         elif com == '!fpincoms':
-            await channel.send(mention, "In_commands:", 
+            await channel.send(mention + " In_commands: " +
                 ', '.join(incomsList.keys()))
         elif com == '!fpmodcoms':
-            await channel.send(mention, "Mod commands:", 
+            await channel.send(mention + " Mod commands: " +
                 ', '.join(modcomsList + regmodcoms))
         elif com == '!nobully':
             nobullyEmbed = discord.Embed(description="**Don't Bully!**")
@@ -241,21 +242,21 @@ async def on_message(message):
                         pass
         elif com == "!fpaddcom":
             if len(msgParts) >= 3:
-                with open("commands.txt", "a", 
+                with open("commands.txt", "a",
                     encoding="utf-8") as commandsFile:
                     commandsList[com2] = " ".join(msgParts[2:])
                     commandsFile.write(' '.join(msgParts[1:]) + '\n')
-                await channel.send(mention, 'Added command "{}"'.format(com2))
+                await channel.send('{} Added command "{}"'.format(mention,com2))
             else:
-                await channel.send(mention, 
-                    "Syntax: `!fpaddcom [command] [output]`")
+                await channel.send(mention +
+                    " Syntax: `!fpaddcom [command] [output]`")
         elif com == '!fpdelcom':
             if len(msgParts) == 2:
                 if com2 in commandsList:
                     del commandsList[com2]
                     with open('commands.txt') as f:
                         lines = f.readlines()
-                    with open("commands.txt", 'w', 
+                    with open("commands.txt", 'w',
                         encoding='utf-8') as commandsFile:
                         for line in lines:
                             if not line.split()[0] == com2:
@@ -263,7 +264,7 @@ async def on_message(message):
                     await channel.send(
                         '{} Removed command "{}"'.format(mention, com2))
                 else:
-                    await channel.send(mention, 'Command "{}" doesn\'t exist'.
+                    await channel.send(mention + ' Command "{}" doesn\'t exist'.
                         format(com2))
             else:
                 await channel.send("Syntax: `!fpdelcom [command]`")
@@ -271,7 +272,7 @@ async def on_message(message):
             with open("incoms.txt", "a", encoding='utf-8') as incomsFile:
                 incomsFile.write(' '.join(msgParts[1:]) + '\n')
                 incomsList[com2] = ' '.join(msgParts[2:])
-            await channel.send(mention, 'Added in_command "{}"'.format(com2))
+            await channel.send('{} Added in_command "{}"'.format(mention, com2))
         elif com == '!fpdelincom':
             if com2 in incomsList:
                 del incomsList[com2]
@@ -282,16 +283,16 @@ async def on_message(message):
                         if not line.split()[0] == com2:
                             incomsFile.write(line + '\n')
                 await channel.send(
-                    mention, 'Removed in_command "{}"'.format(com2))
+                    '{} Removed in_command "{}"'.format(mention, com2))
             else:
-                await channel.send(mention, 'In_command "{}" doesn\'t exist'.
-                    format(com2.capitalize))
+                await channel.send('{} In_command "{}" doesn\'t exist'.
+                    format(mention, com2.capitalize))
         elif com == '!fpaddmodcom':
             with open("modcoms.txt", "a", encoding="utf8") as modcomsFile:
                 modcomsList[com2] = " ".join(msgParts[2:])
                 modcomsFile.write(' '.join(msgParts[1:] + '\n'))
             await channel.send(
-                mention, 'Added mod command "{}"'.format(com2))
+                '{} Added mod command "{}"'.format(mention, com2))
         elif com == '!fpdelmodcom':
             if len(msgParts) == 2:
                 del modcomsList[com2]
@@ -303,7 +304,7 @@ async def on_message(message):
                             if not line.split()[0].lower() == com2:
                                 modcomsFile.write(line + '\n')
                 await channel.send(
-                    mention, 'Deleted mod command "{}"'.format(com2))
+                    '{} Deleted mod command "{}"'.format(mention, com2))
         elif com == '!fpdelroles':
             # Requires "Manage Roles" permission.
             # Doesn't usually delete all roles at once,
@@ -344,32 +345,34 @@ async def on_message(message):
                     async for i in channel.history(limit=num):
                         await i.add_reaction(e[2:-1])
                 except:
-                    await channel.send(mention, 
-                        'Syntax: `!fpreact [n] [emote]`')
+                    await channel.send(mention +
+                        ' Syntax: `!fpreact [n] [emote]`')
         elif com == '!fpwhitelist':
             if com2.isdigit():
                 noBlockUsers.append(com2)
             else:
-                await channel.send(mention, 'Syntax: `!fpwhitelist [user id]`')
+                await channel.send(mention +
+                    ' Syntax: `!fpwhitelist [user id]`')
         elif com == '!fpblacklist':
             if com2.isdigit():
                 if com2 in noBlockUsers:
                     noBlockUsers.remove(com2)
                 else:
-                    await channel.send(mention, com2, 'is not whitelisted')
+                    await channel.send('{} {} is not whitelisted'.format(
+                        mention, com2))
             else:
-                await channel.send(mention, 'Syntax: `!fpwhitelist [user id]`')
-                
+                await channel.send(mention + ' Syntax: `!fpwhitelist [user id]`')
+
         if com in modcomsList:
             await channel.send(modcomsList[com])
         elif com == "!s" and len(msgParts) >= 3:
             n = int(com2)
             for i in range(n):
                 await channel.send(' '.join(msgParts[2:]))
-        elif com == "!fpgame":
+        elif com == "!fpstatus":
             await bot.change_presence(game=discord.Game(
                 name=' '.join(msgParts[2:]), type=int(com2)))
-            await channel.send(mention, 'Set game to "{}"'.format(
+            await channel.send(mention + ' Set game to "{}"'.format(
                 ' '.join(msgParts[1:])))
         elif com == '!fpvoice':  # Incomplete
             if len(msgParts) >= 2:
@@ -387,7 +390,7 @@ async def on_message(message):
                             await channel.send('Left "' + vChannel.name + '"')
             else:
                 await channel.send('Missing argument: `join`, `leave`')
-        
+
     if userId in admins:
         if com == "!fpadduser" and len(msgParts) == 2:
             if message.mentions:
@@ -397,7 +400,7 @@ async def on_message(message):
             with open("users.txt", "a", encoding='utf-8') as userFile:
                 userFile.write(str(user) + '\n')
                 userList.append(user)
-            await channel.send(mention, 'Added', user, 'to admins')
+            await channel.send('{} Added {} to admins'.format(mention, user))
         elif com == "!fpdeluser":
             if message.mentions:
                 user = message.mentions[0].id
@@ -410,7 +413,8 @@ async def on_message(message):
                 for line in lines:
                     if line[:-1] != str(user):
                         userFile.write(line)
-            await channel.send(mention, 'Removed', user, 'from admins.')
+            await channel.send('{} Removed {} from admins.'.format(mention,
+                user))
         elif com == "!fpshutdown":
             await channel.send('Shutting down client.')
             await bot.close()
