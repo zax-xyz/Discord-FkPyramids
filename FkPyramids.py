@@ -456,6 +456,9 @@ async def on_message(message):
             # Shut down bot completely
             await channel.send('Shutting down client.')
             await bot.close()
-            print(currentTime, "Bot shutdown.")
+        elif com == "!fpclear":
+            # Clear the bot's internal cache
+            bot.clear()
+            await channel.send('Internal cache cleared.')
 
 bot.run(token)
