@@ -156,7 +156,7 @@ async def on_message(message):
             if len(msgParts) >= 3:
                 await bot.get_channel(int(com2)).send(' '.join(msgParts[2:]))
             else:
-                await channel.send("Format: `!send {channel id} {message}`")
+                await channel.send(f"Usage: `!send {channel id} {message}`")
 
     # If user is not the bot
     if userId != bot.user.id:
@@ -210,9 +210,9 @@ async def on_message(message):
                         await message.author.add_roles(colorRole)
                     await channel.send(f"{mention} Set colour to #{cHex}")
                 else:
-                    await channel.send(f"{mention} Syntax: `{com} [hex code]`")
+                    await channel.send(f"{mention} Usage: `{com} [hex code]`")
             else:
-                await channel.send(f"{mention} Syntax: `{com} [hex code]`")
+                await channel.send(f"{mention} Usage: `{com} [hex code]`")
         # Basic commands
         elif com == '!fpcommands':
             await channel.send(
@@ -242,7 +242,7 @@ async def on_message(message):
                 await channel.send(p * i)
             for i in range(2, pLen):
                 await channel.send(p * (pLen - i))
-        elif com == "!delmsg":
+        elif com == "!fpdelmsg":
             # Delete last {n} messages in channel
             # Requires "Manage Messages" permission
             if com2.isdigit():
@@ -262,7 +262,7 @@ async def on_message(message):
                 await channel.send(f'{mention} Added command "{com2}"')
             else:
                 await channel.send(
-                    f"{mention} Syntax: `!fpaddcom [command] [output]`")
+                    f"{mention} Usage: `!fpaddcom [command] [output]`")
         elif com == '!fpdelcom':
             # Delete basic command
             if len(msgParts) == 2:
@@ -275,14 +275,17 @@ async def on_message(message):
                         # Wipe file and rewrite data to it,
                         # Excluding certain unwanted lines
                         for line in lines:
-                            if not line.split()[0] == com2:
-                                commandsFile.write(line + '\n')
+                            try:
+                                if not line.split()[0] == com2:
+                                    commandsFile.write(line + '\n')
+                            except:
+                                pass
                     await channel.send(f'{mention} Removed command "{com2}"')
                 else:
                     await channel.send(
                         f'{mention} Command "{com2}" doesn\'t exist')
             else:
-                await channel.send("Syntax: `!fpdelcom [command]`")
+                await channel.send("Usage: `!fpdelcom [command]`")
         elif com == "!fpaddincom":
             # Add in_command
             with open("incoms.txt", "a") as incomsFile:
@@ -326,8 +329,7 @@ async def on_message(message):
                         if line:
                             if not line.split()[0].lower() == com2:
                                 modcomsFile.write(line + '\n')
-                await channel.send(
-                    '{} Deleted mod command "{}"'.format(mention, com2))
+                await channel.send(f'{mention} Deleted mod command "{com2}"')
         elif com == '!fpdelroles':
             # Requires "Manage Roles" permission.
             # Doesn't usually delete all roles at once,
@@ -371,14 +373,14 @@ async def on_message(message):
                         await i.add_reaction(e[2:-1])
                 except:
                     await channel.send(
-                        '{mention} Syntax: `!fpreact [n] [emote]`')
+                        '{mention} Usage: `!fpreact [n] [emote]`')
         elif com == '!fpwhitelist':
             # Whitelist user from pyramid blocking
             if com2.isdigit():
                 noBlockUsers.append(com2)
             else:
                 await channel.send(
-                    f'{mention} Syntax: `!fpwhitelist [user id]`')
+                    f'{mention} Usage: `!fpwhitelist [user id]`')
         elif com == '!fpblacklist':
             # Remove user from pyramid blocking whitelist
             if com2.isdigit():
@@ -388,7 +390,7 @@ async def on_message(message):
                     await channel.send(f'{mention} {com2} is not whitelisted')
             else:
                 await channel.send(
-                    f'{mention} Syntax: `!fpblacklist [user id]`')
+                    f'{mention} Usage: `!fpblacklist [user id]`')
 
         if com in modcomsList:
             await channel.send(modcomsList[com])
@@ -403,6 +405,7 @@ async def on_message(message):
                 name=' '.join(msgParts[2:]), type=int(com2)))
             await channel.send(
                 f'{mention} Set game to "{" ".join(msgParts[2:])}"')
+        """
         elif com == '!fpvoice':  # Incomplete
             if len(msgParts) >= 2:
                 if com2 == 'join':
@@ -423,6 +426,7 @@ async def on_message(message):
                             await channel.send('Left "{vChannel.name}"')
             else:
                 await channel.send('Missing argument: `join`, `leave`')
+        """
 
     if userId in admins:
         if com == "!fpadduser" and len(msgParts) == 2:
