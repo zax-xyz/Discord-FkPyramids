@@ -156,7 +156,7 @@ async def on_message(message):
             if len(msgParts) >= 3:
                 await bot.get_channel(int(com2)).send(' '.join(msgParts[2:]))
             else:
-                await channel.send(f"Usage: `!send {channel id} {message}`")
+                await channel.send("Usage: `!send {channel id} {message}`")
 
     # If user is not the bot
     if userId != bot.user.id:
