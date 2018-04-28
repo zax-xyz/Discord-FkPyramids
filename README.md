@@ -1,3 +1,5 @@
+[![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+
 # DiscordFkPyramids
 The initial main purpose of this bot was to automatically block pyramids after the third message. 
 
@@ -27,3 +29,5 @@ $ python FkPyramids.py
 ```
 $ python3 FkPyramids.py
 ```
+## License
+This project is licensed under the GNU General Public License v3.0. See [LICENSE](https://github.com/zaxutic/Discord-FkPyramids/tree/rewrite/LICENSE) for more information.
