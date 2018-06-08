@@ -41,7 +41,7 @@ pip install "yarl<1.2"
 ```
 *"*
 
-This is required for `import discord`, the first line of the `FkPyramids.py` file to work properly. *(As of 4/5/18 - 8/6/18, this may have changed by the time you are reading this.)*
+This is required for FkPyramids to run. Without it, `FkPyramids.py` exits on the first import. *(As of 4/5/18 - 8/6/18, this may have changed by the time you are reading this.)*
 
 ### Main
 ```
