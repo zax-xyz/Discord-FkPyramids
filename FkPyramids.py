@@ -15,7 +15,7 @@ logger.addHandler(handler)
 
 bot = discord_commands.Bot(
     command_prefix="fp!",
-    status=discord.Activity(name="pyramids getting fk'd", type='watching')
+    status=discord.Activity(name="pyramids getting fk'd", type=3)
 )
 
 commandsList = {}
@@ -34,11 +34,11 @@ def currentTime():
     return colored(t.strftime("%Y-%m-%d %H:%M:%S"), 'green')
 
 
-def get_lines(f, dic):
+def get_coms(f, dic):
     for line in f:
-        lineParts = line.split()
+        com, out = line.split(maxsplit=1)
         try:
-            dic[lineParts[0].lower()] = " ".join(lineParts[1:])
+            dic[com] = " ".join(out)
         except IndexError:
             pass
 
@@ -72,13 +72,13 @@ def is_admin():
 
 
 with open("commands.txt", "r", encoding="utf-8") as commandsFile:
-    get_lines(commandsFile, commandsList)
+    get_coms(commandsFile, commandsList)
 
 with open("incoms.txt", "r", encoding='utf-8') as incomsFile:
-    get_lines(incomsFile, incomsList)
+    get_coms(incomsFile, incomsList)
 
 with open("modcoms.txt", "r", encoding='utf-8') as modcomsFile:
-    get_lines(modcomsFile, modComs)
+    get_coms(modcomsFile, modComs)
 
 # Import moderator list
 with open("users.txt", "r", encoding='utf-8') as userFile:
@@ -173,7 +173,7 @@ async def on_message(message):
             if key:
                 await channel.send(incomsList[key])
 
-    bot.process_commands(message)
+    await bot.process_commands(message)
 
 
 @bot.command(brief="Sends message to channel by ID.")
@@ -268,7 +268,7 @@ async def addcom(ctx, command: str, *, output: str):
     commandsList[command] = output
     with open("commands.txt", "a") as commandsFile:
         commandsFile.write(f"{command} {output}\n")
-    await send_mention(f'Added command "{command}"')
+    await send_mention(ctx, f'Added command "{command}"')
 
 
 @bot.command(brief="Deletes command.")
@@ -281,9 +281,9 @@ async def delcom(ctx, command: str):
         with open("commands.txt", 'w') as commandsFile:
             for line in filter(lambda l: l.split()[0] != command, lines):
                 commandsFile.write(line + '\n')
-        await send_mention(f'Removed command "{command}"')
+        await send_mention(ctx, f'Removed command "{command}"')
     else:
-        await send_mention(f'Command "{command}" doesn\'t exist')
+        await send_mention(ctx, f'Command "{command}" doesn\'t exist')
 
 
 @bot.command(brief="Adds in_command.")
@@ -292,7 +292,7 @@ async def addincom(ctx, in_com: str, *, output: str):
     incomsList[in_com] = output
     with open("incoms.txt", "a") as incomsFile:
         incomsFile.write(f"{in_com} {output}\n")
-    await send_mention(f'Added in_command "{in_com}"')
+    await send_mention(ctx, f'Added in_command "{in_com}"')
 
 
 @bot.command(brief="Deletes in_command.")
@@ -305,9 +305,9 @@ async def delincom(ctx, in_com: str):
         with open("incoms.txt", "w") as incomsFile:
             for line in filter(lambda l: l.split()[0] != in_com, lines):
                 incomsFile.write(line + '\n')
-        await send_mention(f'Removed in_command "{in_com}"')
+        await send_mention(ctx, f'Removed in_command "{in_com}"')
     else:
-        await send_mention(f'In_command "{in_com}" doesn\'t exist')
+        await send_mention(ctx, f'In_command "{in_com}" doesn\'t exist')
 
 
 @bot.command(brief="Add mod commmand")
@@ -328,7 +328,7 @@ async def delmodcom(ctx, modcom: str):
     with open("modComsStd.txt", "w") as modcomsFile:
         for line in filter(lambda l: l.split()[0] != modcom, lines):
             modcomsFile.write(line + '\n')
-    await send_mention(f'Deleted mod command "{modcom}"')
+    await send_mention(ctx, f'Deleted mod command "{modcom}"')
 
 
 @bot.command(brief="Delete all unused roles in server")
@@ -364,9 +364,9 @@ async def react(ctx, n: int, em: str):
             async for i in channel.history(limit=num):
                 await i.add_reaction(em[2:-1])
         except (discord.errors.NotFound, discord.errors.InvalidArgument):
-            await send_mention('Usage: `!fpreact [n] [emote]`')
+            await send_mention(ctx, 'Usage: `!fpreact [n] [emote]`')
         except discord.errors.Forbidden:
-            await send_mention('Could not react to message.')
+            await send_mention(ctx, 'Could not react to message.')
 
 
 @bot.command(brief="Whitelist user from pyramid blocking")
@@ -381,7 +381,7 @@ async def blacklist(ctx, user: int):
     if user in noBlockUsers:
         noBlockUsers.remove(user)
     else:
-        await send_mention(f'{user} is not whitelisted')
+        await send_mention(ctx, f'{user} is not whitelisted')
 
 
 @bot.command(brief="Send message [n] amount of times in a row")
@@ -393,10 +393,16 @@ async def s(ctx, n: int, message: str):
 
 @bot.command(brief="Change activity status of bot")
 @is_mod()
-async def status(ctx, aType: str, name: str):
+async def status(ctx, aType: str, *, name: str):
+    if aType == 'playing':
+        aType = 1
+    elif aType == 'listening':
+        aType = 2
+    elif aType == 'watching':
+        aType = 3
     await bot.change_presence(
         activity=discord.Activity(name=name, type=aType))
-    await send_mention(f'Set activity to "{name}"')
+    await send_mention(ctx, f'Set activity to "{name}"')
 
 
 @bot.command(brief="Add user to moderator list")
@@ -407,7 +413,7 @@ async def adduser(ctx, user: str):
     with open("users.txt", "a", encoding='utf-8') as userFile:
         userFile.write(user + '\n')
         mods.append(int(user))
-    await send_mention(f'Added {user} to moderators')
+    await send_mention(ctx, f'Added {user} to moderators')
 
 
 @bot.command(brief="Remove user from moderator list")
@@ -423,7 +429,7 @@ async def deluser(ctx, user: str):
         for line in lines:
             if line[:-1] != user:
                 userFile.write(line)
-    await send_mention(f'Removed {user} from moderators.')
+    await send_mention(ctx, f'Removed {user} from moderators.')
 
 
 @bot.command(brief="Shutdown bot")
