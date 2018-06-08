@@ -30,7 +30,7 @@ or
 $ pip3 install -U git+https://github.com/Rapptz/discord.py@rewrite
 ```
 
-#### Yarl
+### Yarl
 From [abccd's answer at Stack Overflow](https://stackoverflow.com/a/50177737):
 
 *"Discord.py rewrite branch has some problems recently with its requirements.txt and aiohttp support. You need to manually install a lower version of yarl to support discord.py's required aiohttp library.*
