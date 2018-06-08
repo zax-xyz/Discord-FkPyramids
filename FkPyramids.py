@@ -5,6 +5,7 @@ import datetime
 import time
 import logging
 from termcolor import colored
+import re
 
 logger = logging.getLogger('discord')
 handler = logging.FileHandler(
@@ -113,6 +114,38 @@ async def on_message(message):
     channel = message.channel
     chanId = channel.id
     name, disc = str(message.author).rsplit('#', 1)
+    disc = '#' + disc
+
+    mention_replace = (
+        (message.mentions, lambda x: '@' + x.name),
+        (message.channel_mentions, lambda x: '#' + x.name),
+        (message.role_mentions, lambda x: 'r@' + x.name)
+    )
+
+    if msg:
+        for tup in mention_replace:
+            for i in tup[0]:
+                msg = re.sub(
+                    i.mention,
+                    lambda x: colored(tup[1](i), 'cyan', attrs=['bold']),
+                    msg,
+                    count=1
+                )
+
+        msg = re.sub(r'<:\w+:\d+>',
+            lambda x: colored(f':{x.group().split(":")[1]}:', 'cyan'),
+            msg
+        )
+    else:
+        msg = colored(
+            'Unable to display message (image, embed, etc)',
+            'red',
+            attrs=['bold']
+        )
+
+    if message.attachments:
+        for attach in message.attachments:
+            msg += ' ' + colored(attach.url, 'cyan')
 
     print('{} {}  {}{}: {}'.format(
         currentTime(),
