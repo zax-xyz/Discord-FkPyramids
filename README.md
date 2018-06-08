@@ -51,7 +51,6 @@ $ cd Discord-FkPyramids
 
 ## Setup 
 - Clone or download this repository into a directory.
-- On line 9 of `FkPyramids.py`, replace `135678905028706304` with your user ID (NOT the bot's ID). Refer to the [Discord Support Article](https://support.discordapp.com/hc/en-us/articles/206346498-Where-can-I-find-my-User-Server-Message-ID-) if unsure.
 - Create a `token.txt` file and write your bot's authentication (OAuth) token to this file.
 
 ## Running
