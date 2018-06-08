@@ -16,7 +16,7 @@ logger.addHandler(handler)
 
 bot = discord_commands.Bot(
     command_prefix="fp!",
-    status=discord.Activity(name="pyramids getting fk'd", type=3)
+    activity=discord.Activity(name="pyramids getting fk'd", type=3)
 )
 
 commandsList = {}
@@ -434,6 +434,7 @@ async def status(ctx, aType: str, *, name: str):
         aType = 2
     elif aType == 'watching':
         aType = 3
+
     await bot.change_presence(
         activity=discord.Activity(name=name, type=aType))
     await send_mention(ctx, f'Set activity to "{name}"')
