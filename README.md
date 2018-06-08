@@ -7,6 +7,7 @@ Discord bot designed to automatically block pyramids after the third message, wi
 - Python 3.6+
 - `discord.py` 1.0.0a (for stable release, see [master](https://github.com/zaxutic/Discord-FkPyramids/tree/master/) branch)
 - `aiohttp` library
+- `Yarl` library (<1.2)
 - `websockets` library
 
 ## Installation
