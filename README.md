@@ -44,7 +44,7 @@ This is required for `import discord`, the first line of the `FkPyramids.py` fil
 
 ### Main
 ```
-$ git clone -b rewrite --single-branch https://github.com/zaxutic/Discord-FkPyramids.git
+$ git clone https://github.com/zaxutic/Discord-FkPyramids.git
 $ cd Discord-FkPyramids
 ```
 
