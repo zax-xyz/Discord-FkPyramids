@@ -132,7 +132,8 @@ async def on_message(message):
                     count=1
                 )
 
-        msg = re.sub(r'<:\w+:\d+>',
+        msg = re.sub(
+            r'<:\w+:\d+>',
             lambda x: colored(f':{x.group().split(":")[1]}:', 'cyan'),
             msg
         )

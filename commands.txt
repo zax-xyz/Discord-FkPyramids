@@ -1,2 +1,2 @@
-!fphelp FkPyramids is a bot primarily made to block pyramids. View commands with !fpcommands, !fpincoms and !fpmodcoms.
-!fpgithub My source code can be found here: https://github.com/zaxutic/Discord-FkPyramids/tree/rewrite
+fp!help FkPyramids is a bot primarily made to block pyramids. View commands with !fpcommands, !fpincoms and !fpmodcoms.
+fp!github My source code can be found here: https://github.com/zaxutic/Discord-FkPyramids/tree/rewrite
