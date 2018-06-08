@@ -19,6 +19,7 @@ or
 ```
 $ pip install -U git+https://github.com/Rapptz/discord.py@rewrite
 ```
+
 #### Linux/Mac OS X
 ```
 $ python3 -m pip install -U git+https://github.com/Rapptz/discord.py@rewrite
@@ -27,6 +28,20 @@ or
 ```
 $ pip3 install -U git+https://github.com/Rapptz/discord.py@rewrite
 ```
+
+#### Yarl
+From [abccd's answer at Stack Overflow](https://stackoverflow.com/a/50177737):
+
+*"Discord.py rewrite branch has some problems recently with its requirements.txt and aiohttp support. You need to manually install a lower version of yarl to support discord.py's required aiohttp library.*
+
+*You need to run the following:*
+```
+pip install "yarl<1.2"
+```
+*"*
+
+This is required for `import discord`, the first line of the `FkPyramids.py` file to work properly. *(As of 4/5/18 - 8/6/18, this may have changed by the time you are reading this.)*
+
 ### Main
 ```
 $ git clone -b rewrite --single-branch https://github.com/zaxutic/Discord-FkPyramids.git
