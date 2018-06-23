@@ -5,7 +5,7 @@ Discord bot designed to automatically block pyramids after the third message, wi
 
 ## Dependencies
 - Python 3.6+
-- `discord.py` 1.0.0a (for stable release, see [master](https://github.com/zaxutic/Discord-FkPyramids/tree/master/) branch)
+- `discord.py` 1.0.0a (for stable release, see [legacy](https://github.com/zaxutic/Discord-FkPyramids/tree/legacy/) branch)
 - `aiohttp` library
 - `yarl` library (<1.2)
 - `websockets` library
@@ -63,5 +63,9 @@ $ python FkPyramids.py
 ```
 $ python3 FkPyramids.py
 ```
+
+## Development
+All major development goes into the [dev](https://github.com/zaxutic/Discord-FkPyramids/tree/dev/) branch before being merged into this branch (README in dev branch will likely be updated very infrequently and only updated when changes are merged into the [rewrite](https://github.com/zaxutic/Discord-FkPyramids/tree/rewrite/) 
+
 ## License
 This project is licensed under the GNU General Public License v3.0. See [LICENSE](https://github.com/zaxutic/Discord-FkPyramids/tree/rewrite/LICENSE) for more information.
