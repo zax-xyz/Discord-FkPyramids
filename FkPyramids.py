@@ -22,7 +22,7 @@ local_vars = {'cooldown': 0}
 
 logger = logging.getLogger('discord')
 handler = logging.FileHandler(
-    filename='discord.log', encoding='utf-8', mode='w')
+    filename='log/discord.log', encoding='utf-8', mode='w')
 handler.setFormatter(
     logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
 logger.addHandler(handler)
