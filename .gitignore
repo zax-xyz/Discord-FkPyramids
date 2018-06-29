@@ -1,0 +1,8 @@
+config/auth.py
+config/auth.py.bak
+discord.log
+__pycache__
+cogs/__pycache__
+config/__pycache__
+old/*
+.FkPyramids.py.swp
