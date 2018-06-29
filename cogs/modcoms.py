@@ -9,7 +9,7 @@ import global_settings as gvars
 class Mod_Commands:
     def __init__(self, bot):
         self.bot = bot
-
+        self.types = {'playing': 1, 'listening': 2, 'watching': 3}
 
     def __global_check(self, ctx):
         return ctx.message.author.id in gvars.mods or commands.is_owner()
@@ -35,7 +35,6 @@ class Mod_Commands:
     @commands.command(brief="Adds a command.")
     async def addcom(self, ctx, command: str, *, output: str):
         gvars.commands[command] = output
-
         with open('commands.json', 'w', encoding='utf-8') as commands_file:
             json.dump(gvars.commands, commands_file)
 
@@ -46,7 +45,6 @@ class Mod_Commands:
     async def delcom(self, ctx, command: str):
         if command in gvars.commands:
             del gvars.commands[command]
-
             with open('commands.json', 'w', encoding='utf-8') as commands_file:
                 json.dump(gvars.commands, commands_file)
 
@@ -58,7 +56,6 @@ class Mod_Commands:
     @commands.command(brief="Adds in_command.")
     async def addincom(self, ctx, in_com: str, *, output: str):
         gvars.incoms[in_com] = output
-
         with open("incoms.json", "w", encoding="utf-8") as incoms_file:
             json.dump(gvars.incoms, incoms_file)
 
@@ -69,7 +66,6 @@ class Mod_Commands:
     async def delincom(self, ctx, in_com: str):
         if in_com in gvars.incoms:
             del gvars.incoms[in_command]
-
             with open("incoms.json", "w", encoding="utf-8") as incoms_file:
                 json.dump(gvars.incoms, incoms_file)
 
@@ -81,7 +77,6 @@ class Mod_Commands:
     @commands.command(brief="Add mod commmand.")
     async def addmodcom(self, ctx, command: str, *, output: str):
         gvars.mod_coms[command] = output
-
         with open("modcoms.json", "w", encoding="utf-8") as modcoms_file:
             json.dump(gvars.mod_coms, modcoms_file)
 
@@ -92,7 +87,6 @@ class Mod_Commands:
     async def delmodcom(self, ctx, command: str):
         if modcom in gvars.mod_coms:
             del gvars.mod_coms[command]
-
             with open("modcoms.json", "w", encoding="utf-8") as modcoms_file:
                 json.dump(gvars.mod_coms, modcoms_file)
 
@@ -104,9 +98,7 @@ class Mod_Commands:
     @commands.command(brief="Delete all unused roles in server.")
     async def delroles(self, ctx):
         # Requires "Manage Roles" permission.
-
         unused_roles = filter(lambda r: not r.members, ctx.message.guild.roles)
-
         for r in list(unused_roles):
             await r.delete()
             await ctx.send(f'Deleted role "{r.name}".')
@@ -157,10 +149,8 @@ class Mod_Commands:
 
     @commands.command(brief="Change activity status of bot.")
     async def status(self, ctx, activity_type: str, *, name: str):
-        types = {'playing': 1, 'listening': 2, 'watching': 3}
-
-        if activity_type in types:
-            activity_type = types[activity_type]
+        if activity_type in self.types:
+            activity_type = self.types[activity_type]
         else:
             return await send_mention(ctx, 'Invalid type')
 

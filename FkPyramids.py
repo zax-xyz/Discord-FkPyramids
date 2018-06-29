@@ -52,6 +52,13 @@ def delete(chan):
         del Channels[chan]
 
 
+def get_user(user):
+    user_get = bot.get_user(user)
+    if user_get:
+        return user_get.mention
+    return user
+
+
 def load_file(filename):
     path = Path.cwd().joinpath('config', filename)
     with path.open() as f:
@@ -201,13 +208,11 @@ async def on_message(message):
         # In_commands
         if time.time() - local_vars['cooldown'] > 30:
             try:
-                key = next(k for k in gvars.incoms if k in msg.lower())
-            except StopIteration:
-                key = None
-
-            if key:
                 await channel.send(gvars.incoms[key])
                 local_vars['cooldown'] = time.time()
+                key = next(k for k in gvars.incoms if k in msg.lower())
+            except StopIteration:
+                pass
 
     await bot.process_commands(message)
 
@@ -221,9 +226,8 @@ async def _commands(ctx):
 
 @bot.command(brief="Displays moderators for FkPyramids.")
 async def mods(ctx):
-    mods = [*gvars.mods]
-    mods_men = [bot.get_user(x).mention if bot.get_user(x) else x for x in mods]
-    await send_mention(ctx, "Mods: " + ', '.join([str(x) for x in mods_men]))
+    mods_men = [get_user(x) for x in gvars.mods]
+    await send_mention(ctx, "Mods: " + ', '.join(str(x) for x in mods_men))
 
 
 @bot.command(brief="Displays available in_commands.")
