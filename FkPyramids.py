@@ -88,11 +88,13 @@ async def on_ready():
     print(colored('Name:', 'green', attrs=['bold']), bot.user.name)
     print(colored('ID:', 'green', attrs=['bold']), bot.user.id)
 
-    gvars.no_block_users = [bot.user.id, 135678905028706304]
 
     bot_info = await bot.application_info()
     local_vars['Owner'] = bot_info.owner.id
 
+    gvars.no_block_users = [bot.user.id, 135678905028706304]
+    if local_vars['Owner'] not in gvars.mods:
+        gvars.mods.insert(0, local_vars['Owner'])
 
 @bot.event
 async def on_message(message):
@@ -191,7 +193,7 @@ async def on_message(message):
     if user_id != bot.user.id and msg_parts:
         com = msg_parts[0]
         # Custom commands
-        if user_id in gvars.mods + [local_vars['Owner']] and com in gvars.mod_coms:
+        if user_id in gvars.mods and com in gvars.mod_coms:
             return await channel.send(gvars.mod_coms[com])
         elif com in gvars.commands:
             return await channel.send(gvars.commands[com])
