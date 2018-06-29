@@ -10,6 +10,7 @@ import sys
 import json
 import re
 import traceback
+from pathlib import Path
 from termcolor import colored
 
 import global_settings as gvars
@@ -52,7 +53,8 @@ def delete(chan):
 
 
 def load_file(filename):
-    with open("config/" + filename, "r", encoding="utf-8") as f:
+    path = Path.cwd().joinpath('config', filename)
+    with path.open() as f:
         return json.load(f)
 
 gvars.commands = load_file("commands.json")
