@@ -25,7 +25,7 @@ class Owner_Commands:
         user_mention = bot.get_user(user).mention
         mods.append(user)
 
-        with open("users.json", "w") as userFile:
+        with open("users.json", "w") as user_file:
             json.dump(mods)
 
         await send_mention(ctx, f'Added {user_mention} to moderators')
@@ -40,8 +40,8 @@ class Owner_Commands:
 
         if user in mods:
             mods.remove(user)
-            with open('users.json', 'w') as userFile:
-                json.dump(mods, userFile)
+            with open('users.json', 'w') as user_file:
+                json.dump(mods, user_file)
 
             await send_mention(ctx, f'Removed {user_mention} from moderators.')
         else:

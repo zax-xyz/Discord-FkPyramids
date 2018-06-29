@@ -1,13 +1,13 @@
 def init():
     global commands
     global incoms
-    global modComs
+    global mod_coms
     global mods
-    global noBlockUsers
+    global no_block_users
 
     commands = {}
     incoms = {}
-    modComs = {}
+    mod_coms = {}
     mods = {}
 
-    noBlockUsers = []
+    no_block_users = []

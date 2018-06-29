@@ -36,8 +36,8 @@ class Mod_Commands:
     async def addcom(self, ctx, command: str, *, output: str):
         gvars.commands[command] = output
 
-        with open('commands.json', 'w', encoding='utf-8') as commandsFile:
-            json.dump(gvars.commands, commandsFile)
+        with open('commands.json', 'w', encoding='utf-8') as commands_file:
+            json.dump(gvars.commands, commands_file)
 
         await send_mention(ctx, f'Added command "{command}"')
 
@@ -47,8 +47,8 @@ class Mod_Commands:
         if command in gvars.commands:
             del gvars.commands[command]
 
-            with open('commands.json', 'w', encoding='utf-8') as commandsFile:
-                json.dump(gvars.commands, commandsFile)
+            with open('commands.json', 'w', encoding='utf-8') as commands_file:
+                json.dump(gvars.commands, commands_file)
 
             await send_mention(ctx, f'Removed command "{command}"')
         else:
@@ -59,8 +59,8 @@ class Mod_Commands:
     async def addincom(self, ctx, in_com: str, *, output: str):
         gvars.incoms[in_com] = output
 
-        with open("incoms.json", "w", encoding="utf-8") as incomsFile:
-            json.dump(gvars.incoms, incomsFile)
+        with open("incoms.json", "w", encoding="utf-8") as incoms_file:
+            json.dump(gvars.incoms, incoms_file)
 
         await send_mention(ctx, f'Added in_command "{in_com}"')
 
@@ -70,8 +70,8 @@ class Mod_Commands:
         if in_com in gvars.incoms:
             del gvars.incoms[in_command]
 
-            with open("incoms.json", "w", encoding="utf-8") as incomsFile:
-                json.dump(gvars.incoms, incomsFile)
+            with open("incoms.json", "w", encoding="utf-8") as incoms_file:
+                json.dump(gvars.incoms, incoms_file)
 
             await send_mention(ctx, f'Removed in_command "{in_com}"')
         else:
@@ -80,21 +80,21 @@ class Mod_Commands:
 
     @commands.command(brief="Add mod commmand.")
     async def addmodcom(self, ctx, command: str, *, output: str):
-        gvars.modComs[command] = output
+        gvars.mod_coms[command] = output
 
-        with open("modcoms.json", "w", encoding="utf-8") as modcomsFile:
-            json.dump(gvars.modComs, modcomsFile)
+        with open("modcoms.json", "w", encoding="utf-8") as modcoms_file:
+            json.dump(gvars.mod_coms, modcoms_file)
 
         await channel.send(f'{mention} Added mod command "{command}"')
 
 
     @commands.command(brief="Delete mod command.")
     async def delmodcom(self, ctx, command: str):
-        if modcom in gvars.modComs:
-            del gvars.modComs[command]
+        if modcom in gvars.mod_coms:
+            del gvars.mod_coms[command]
 
-            with open("modcoms.json", "w", encoding="utf-8") as modcomsFile:
-                json.dump(gvars.modComs, modcomsFile)
+            with open("modcoms.json", "w", encoding="utf-8") as modcoms_file:
+                json.dump(gvars.mod_coms, modcoms_file)
 
             await send_mention(ctx, f'Deleted mod command "{command}"')
         else:
@@ -138,13 +138,13 @@ class Mod_Commands:
 
     @commands.command(brief="Whitelist user from pyramid blocking.")
     async def whitelist(self, ctx, user: int):
-        gvars.noBlockUsers.append(user)
+        gvars.no_block_users.append(user)
 
 
     @commands.command(brief="Remove user from pyramid blocking whitelist.")
     async def blacklist(self, ctx, user: int):
-        if user in noBlockUsers:
-            gvars.noBlockUsers.remove(user)
+        if user in no_block_users:
+            gvars.no_block_users.remove(user)
         else:
             await send_mention(ctx, f'{user} is not whitelisted')
 
@@ -156,15 +156,17 @@ class Mod_Commands:
 
 
     @commands.command(brief="Change activity status of bot.")
-    async def status(self, ctx, aType: str, *, name: str):
+    async def status(self, ctx, activity_type: str, *, name: str):
         types = {'playing': 1, 'listening': 2, 'watching': 3}
 
-        if aType in types:
-            aType = types[aType]
+        if activity_type in types:
+            activity_type = types[activity_type]
         else:
             return await send_mention(ctx, 'Invalid type')
 
-        await bot.change_presence(activity=discord.Activity(name=name, type=aType))
+        await bot.change_presence(
+            activity=discord.Activity(name=name, type=activity_type)
+        )
         await send_mention(ctx, f'Set activity to "{name}"')
 
 

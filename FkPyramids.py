@@ -40,7 +40,7 @@ startup_extensions = ['cogs.modcoms', 'cogs.owner_coms']
 Channels = {}
 
 
-def currentTime():
+def current_time():
     t = datetime.datetime.now()
     return colored(t.strftime("%Y-%m-%d %H:%M:%S"), 'green')
 
@@ -57,7 +57,7 @@ def load_file(filename):
 
 gvars.commands = load_file("commands.json")
 gvars.incoms = load_file("incoms.json")
-gvars.modComs = load_file("modcoms.json")
+gvars.mod_coms = load_file("modcoms.json")
 gvars.mods = load_file("users.json")
 
 
@@ -82,11 +82,11 @@ async def on_command_error(ctx, error):
 
 @bot.event
 async def on_ready():
-    print(currentTime(), colored('Bot Online', 'green', attrs=['bold']))
+    print(current_time(), colored('Bot Online', 'green', attrs=['bold']))
     print(colored('Name:', 'green', attrs=['bold']), bot.user.name)
     print(colored('ID:', 'green', attrs=['bold']), bot.user.id)
 
-    gvars.noBlockUsers = [bot.user.id, 135678905028706304]
+    gvars.no_block_users = [bot.user.id, 135678905028706304]
 
     bot_info = await bot.application_info()
     local_vars['Owner'] = bot_info.owner.id
@@ -94,11 +94,11 @@ async def on_ready():
 
 @bot.event
 async def on_message(message):
-    userId = message.author.id
+    user_id = message.author.id
     msg = str(message.content)
-    msgParts = msg.split()
+    msg_parts = msg.split()
     channel = message.channel
-    chanId = channel.id
+    chan_id = channel.id
     name, disc = str(message.author).rsplit('#', 1)
     disc = '#' + disc
 
@@ -140,7 +140,7 @@ async def on_message(message):
             msg += ' ' + colored(attach.url, 'cyan')
 
     print('{} {}  {}{}: {}'.format(
-        currentTime(),
+        current_time(),
         colored(f'[{message.guild.name}]', attrs=['bold']),
         colored(
             name,
@@ -151,46 +151,46 @@ async def on_message(message):
     ))
 
     # Pyramid blocking
-    if userId not in gvars.noBlockUsers:
-        if chanId in Channels:
-            if len(msgParts) == 1:
-                if (len(msgParts) == Channels[chanId]['len'] - 1 and
-                        msg == Channels[chanId]['py']):
+    if user_id not in gvars.no_block_users:
+        if chan_id in Channels:
+            if len(msg_parts) == 1:
+                if (len(msg_parts) == Channels[chan_id]['len'] - 1 and
+                        msg == Channels[chan_id]['py']):
                     # Completed 2-tier (baby) pyramid
                     await send_mention(channel,
                         "Baby pyramids don't count, you fucking degenerate.")
 
-                Channels[chanId]['py'] = msg
-                Channels[chanId]['len'] = 1
-            elif len(msgParts) == 1 + Channels[chanId]['len']:
-                Channels[chanId]['len'] += 1
+                Channels[chan_id]['py'] = msg
+                Channels[chan_id]['len'] = 1
+            elif len(msg_parts) == 1 + Channels[chan_id]['len']:
+                Channels[chan_id]['len'] += 1
 
-                for part in msgParts:
-                    if part != Channels[chanId]['py']:
+                for part in msg_parts:
+                    if part != Channels[chan_id]['py']:
                         # Pyramid broken
-                        del Channels[chanId]
+                        del Channels[chan_id]
                         break
                 else:
-                    if Channels[chanId]['len'] == 3:
+                    if Channels[chan_id]['len'] == 3:
                         # Pyramid peaks
                         for i in [1, 2, 3, 2, 1]:
                             await channel.send("no " * i)
 
-                        del Channels[chanId]
+                        del Channels[chan_id]
             else:
                 # Pramid broken
-                del Channels[chanId]
-        elif len(msgParts) == 1:
+                del Channels[chan_id]
+        elif len(msg_parts) == 1:
         # Pyramid start
-            Channels[chanId] = {'len': 1, 'py': msg}
-    elif chanId in Channels:
-        del Channels[chanId]
+            Channels[chan_id] = {'len': 1, 'py': msg}
+    elif chan_id in Channels:
+        del Channels[chan_id]
 
-    if userId != bot.user.id and msgParts:
-        com = msgParts[0]
+    if user_id != bot.user.id and msg_parts:
+        com = msg_parts[0]
         # Custom commands
-        if userId in gvars.mods + [local_vars['Owner']] and com in gvars.modComs:
-            return await channel.send(gvars.modComs[com])
+        if user_id in gvars.mods + [local_vars['Owner']] and com in gvars.mod_coms:
+            return await channel.send(gvars.mod_coms[com])
         elif com in gvars.commands:
             return await channel.send(gvars.commands[com])
 
@@ -230,7 +230,7 @@ async def incoms(ctx):
 @bot.command(brief="Displays available moderator commands.")
 async def modcoms(ctx):
     await send_mention(ctx, "Mod_commands: {} (See `fp!help` for more)".format(
-        ', '.join(gvars.modComs)
+        ', '.join(gvars.mod_coms)
     ))
 
 
@@ -243,15 +243,15 @@ async def nobully(ctx):
 
 @bot.command(brief="Set colour role.", aliases=['color'])
 @from_guild()
-async def colour(ctx, cHex: str):
+async def colour(ctx, colour_hex: str):
     # Requires "Manage Roles" permission
 
     # Add # to hex if not already included
-    cHex = cHex if cHex[0] == ('#') else '#' + cHex
-    hexLetters = ['a', 'b', 'c', 'd', 'e', 'f']
+    colour_hex = colour_hex if colour_hex[0] == ('#') else '#' + colour_hex
+    hex_letters = ['a', 'b', 'c', 'd', 'e', 'f']
 
-    if all((char.isdigit() or char in hexLetters) for char in cHex[1:]):
-        await send_mention(ctx, "Setting color to " + cHex)
+    if all((char.isdigit() or char in hex_letters) for char in colour_hex[1:]):
+        await send_mention(ctx, "Setting color to " + colour_hex)
 
         roles = ctx.message.guild.roles
         author = ctx.message.author
@@ -264,18 +264,18 @@ async def colour(ctx, cHex: str):
                 await r.delete()
 
         # Check if role already exists
-        role = discord.utils.get(roles, name=cHex)
+        role = discord.utils.get(roles, name=colour_hex)
         if role:
             await author.add_roles(role)
         else:
-            colourRole = await ctx.message.guild.create_role(
-                name=cHex,
-                colour=discord.Colour(value=int(cHex[1:], 16)),
+            colour_role = await ctx.message.guild.create_role(
+                name=colour_hex,
+                colour=discord.Colour(value=int(colour_hex[1:], 16)),
             )
-            await colourRole.edit(position=len(roles) - 8)
+            await colour_role.edit(position=len(roles) - 8)
 
-            await author.add_roles(colourRole)
-        await send_mention(ctx, f"Set {ctx.invoked_with} to {cHex}")
+            await author.add_roles(colour_role)
+        await send_mention(ctx, f"Set {ctx.invoked_with} to {colour_hex}")
     else:
         await send_mention(ctx, f"Usage: `{ctx.invoked_with} [hex code]`")
 
