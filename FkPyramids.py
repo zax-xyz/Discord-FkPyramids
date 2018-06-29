@@ -255,37 +255,40 @@ async def colour(ctx, colour_hex: str):
     # Requires "Manage Roles" permission
 
     # Add # to hex if not already included
-    colour_hex = colour_hex if colour_hex[0] == ('#') else '#' + colour_hex
-    hex_letters = ['a', 'b', 'c', 'd', 'e', 'f']
+    if colour_hex[0] != '#':
+        colour_hex = '#' + colour_hex
 
-    if all((char.isdigit() or char in hex_letters) for char in colour_hex[1:]):
-        await send_mention(ctx, "Setting color to " + colour_hex)
-
-        roles = ctx.message.guild.roles
-        author = ctx.message.author
-
-        # Remove any existing colour roles
-        for r in filter(lambda r: r.name[0] == ('#'), roles):
-            await author.remove_roles(r)
-
-            if not r.members:
-                await r.delete()
-
-        # Check if role already exists
-        role = discord.utils.get(roles, name=colour_hex)
-        if role:
-            await author.add_roles(role)
-        else:
-            colour_role = await ctx.message.guild.create_role(
-                name=colour_hex,
-                colour=discord.Colour(value=int(colour_hex[1:], 16)),
-            )
-            await colour_role.edit(position=len(roles) - 8)
-
-            await author.add_roles(colour_role)
-        await send_mention(ctx, f"Set {ctx.invoked_with} to {colour_hex}")
-    else:
+    try:
+        hex_value = int(colour_hex[1:] ,16)
+    except ValueError:
         await send_mention(ctx, f"Usage: `{ctx.invoked_with} [hex code]`")
+        return
+
+    await send_mention(ctx, "Setting color to " + colour_hex)
+
+    roles = ctx.message.guild.roles
+    author = ctx.message.author
+
+    # Remove any existing colour roles
+    for role in filter(lambda r: r.name[0] == ('#'), roles):
+        await author.remove_roles(role)
+
+        if not role.members:
+            await role.delete()
+
+    # Check if role already exists
+    role = discord.utils.get(roles, name=colour_hex)
+    if role:
+        await author.add_roles(role)
+    else:
+        colour_role = await ctx.message.guild.create_role(
+            name=colour_hex,
+            colour=discord.Colour(value=hex_value),
+        )
+        await colour_role.edit(position=len(roles) - 8)
+        await author.add_roles(colour_role)
+
+    await send_mention(ctx, f"Set {ctx.invoked_with} to {colour_hex}")
 
 
 if __name__ == "__main__":
