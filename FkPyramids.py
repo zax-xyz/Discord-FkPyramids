@@ -208,9 +208,9 @@ async def on_message(message):
         # In_commands
         if time.time() - local_vars['cooldown'] > 30:
             try:
+                key = next(k for k in gvars.incoms if k in msg.lower())
                 await channel.send(gvars.incoms[key])
                 local_vars['cooldown'] = time.time()
-                key = next(k for k in gvars.incoms if k in msg.lower())
             except StopIteration:
                 pass
 
