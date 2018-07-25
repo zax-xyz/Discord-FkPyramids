@@ -3,3 +3,4 @@ old/*
 *.log
 *.bak
 *.swp
+config_bak
