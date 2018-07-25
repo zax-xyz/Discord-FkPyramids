@@ -3,4 +3,3 @@ old/*
 *.log
 *.bak
 *.swp
-*auth.py
