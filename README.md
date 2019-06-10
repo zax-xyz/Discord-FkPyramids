@@ -11,7 +11,7 @@ NOTE: Although it was the original design intention, the pyramid blocking functi
 
 ## Setup 
 - Create an `auth.py` file in `config` and assign your bot's authentication (OAuth) token to a `token` variable as a string in this file.
-- Optionally create a virtual environment with `python -m venv venv` and activate it with `venv/bin/activate`. If this command doesn't work on your machine, Google it or PR a better README for me :)
+- Optionally create a virtual environment with `python -m venv venv` and activate it with `source venv/bin/activate`. If this command doesn't work on your machine, Google it or PR a better README for me :)
 - Install dependencies with `pip install -U -r requirements.txt`
 
 ## Running
