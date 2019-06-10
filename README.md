@@ -1,6 +1,6 @@
 [![License: GPL v3](https://img.shields.io/badge/License-GPL%20v3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
-# DiscordFkPyramids
+# FkPyramids
 Discord bot designed to automatically block pyramids after the third message, with other features/functionality.
 
 NOTE: Although it was the original entire purpose of the bot, the pyramid blocking functionally has since been removed. Yes, I know the name of the bot doesn't make sense anymore. No, I probably won't change it :)
