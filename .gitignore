@@ -1,0 +1,9 @@
+old/*
+*__pycache__
+log
+*.bak
+*.swp
+config_bak
+venv
+log
+*auth.py

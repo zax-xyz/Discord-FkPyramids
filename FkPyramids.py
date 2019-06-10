@@ -1,468 +1,212 @@
+#!/usr/bin/env python
+"""
+Copyright (C) 2018  Zaxutic
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
+import asyncio
+import datetime
+import importlib
+import json
+import logging
+import psutil
+import sys
+import traceback
+from pathlib import Path
+from string import Template
+
 import discord
 from discord.ext import commands
-import asyncio
-import os
-import datetime
-import time
-import logging
+from termcolor import colored
 
-Owner = 135678905028706304  # Put your user ID here
+import global_settings as gvars
+from config import config
+from config.auth import token
+from twitch_client import twitch_client
 
-# discord.py logging (WARNING level)
-logger = logging.getLogger('discord')
-handler = logging.FileHandler(
-    filename='discord.log', encoding='utf-8', mode='w')
-handler.setFormatter(
-    logging.Formatter('%(asctime)s:%(levelname)s:%(name)s: %(message)s'))
-logger.addHandler(handler)
 
-# Initiate bot instance
-Client = discord.Client()
-bot = commands.Bot(command_prefix="!")
+BOT_ACTIVITY = discord.Activity(
+    name=config.activity_name,
+    type=config.activity_type
+)
 
-# Initiate dictionary variables for commands
-commandsList = {}
-incomsList = {}
-modcomsList = {}
 
-modcoms = ["!pyramid", '!fpaddcom', '!fpdelcom', '!fpaddincom','!fpdelincom',
-           '!fpaddmodcom', '!fpdelmodcom', '!fpreact', '!s', '!fpgame',
-           '!fpreact', '!fpwhitelist']
-admins = [Owner]
-cooldown = 0
-Channels = {}
-
-# Import commands from files
-with open("commands.txt", "r", encoding="utf-8") as commandsFile:
-    for line in commandsFile:
-        lineParts = line.split()
-        try:
-            commandsList[lineParts[0].lower()] = " ".join(lineParts[1:])
-        except IndexError:
-            pass
-with open("incoms.txt", "r", encoding='utf-8') as incomsFile:
-    for line in incomsFile:
-        lineParts = line.split()
-        try:
-            incomsList[lineParts[0].lower()] = ' '.join(lineParts[1:])
-        except:
-            pass
-with open("modcoms.txt", "r", encoding='utf-8') as modcomsFile:
-    for line in modcomsFile:
-        lineParts = line.split()
-        try:
-            modcomsList[lineParts[0].lower()] = ' '.join(lineParts[1:])
-        except:
-            pass
-
-# Import moderator list
-with open("users.txt", "r", encoding='utf-8') as userFile:
-    userList = [int(line[:-1]) for line in userFile]
-
-# Import bot token
-with open("token.txt", 'r') as tokenFile:
-    token = tokenFile.readline()[:-1]
-
-# Get current time in (H)H:MM:SS format
-def currentTime():
+def current_time():
     t = datetime.datetime.now()
-    return "{:%H:%M:%S} ".format(t)
+    return colored(t.strftime("%Y-%m-%d %H:%M:%S"), "green")
 
-# Delete channel entry from dictionary
-def delete(chan):
+
+def plural(num):
+    return "s" if num != 1 else ""
+
+
+def load_file(filename):
+    path = Path.cwd().joinpath("config", filename)
+    with path.open() as f:
+        return json.load(f)
+
+
+async def send_mention(ctx, message):
+    await ctx.send(ctx.author.mention + " " + message)
+
+
+async def get_followers(channel):
     try:
-        del Channels[chan]
-    except KeyError:
-        pass
+        followers = await twitch_client.get_followers(channel)
+    except IndexError:
+        return "Could not find followers for " + channel
+    else:
+        return followers
 
-# Bot starts
-@bot.event
-async def on_ready():
-    global noBlockUsers
-    print(f"{currentTime()} Bot Online")
-    print(f"Name: {bot.user.name}")
-    print(f"ID: {bot.user.id}")
-    noBlockUsers = [bot.user.id]
-    await bot.change_presence(game=discord.Game(
-        name="pyramids getting fk'd", type=3))
 
-# Handler for each message received
-@bot.event
-async def on_message(message):
-    global voice
-    global vChannel
-    global cooldown
+class Bot(commands.Bot):
 
-    # Initiate & assign variables from message
-    username = str(message.author)
-    mention = message.author.mention
-    userId = message.author.id
-    msg = str(message.content)
-    msgParts = msg.split()
-    channel = message.channel
-    chanId = channel.id
-    guild = message.guild
-    guildId = guild.id
+    def __init__(self):
+        super().__init__(command_prefix=config.prefix, activity=BOT_ACTIVITY,
+                         case_insensitive=True)
+        self.process = psutil.Process()
+        self.statuses = {}
+        self.start_time = datetime.datetime.utcnow()
 
-    # Print message with time and username
-    print(f'{currentTime()} {username}: {msg}')
+        for extension in startup_extensions:
+            try:
+                self.load_extension(extension)
+            except Exception:
+                print(f"Failed to load extension {extension}.",
+                      file=sys.stderr)
+                traceback.print_exc()
 
-    # Assign varables for commands
-    com = None
-    com2 = None
-    com3 = None
-    try:
-        com = msgParts[0].lower()
-        com2 = msgParts[1].lower()
-        com3 = msgParts[2]
-    except:
-        pass
+    def _get_user(self, user):
+        user_get = self.get_user(user)
+        if user_get:
+            return user_get.mention
+        return user
 
-    # Pyramid blocking
-    if chanId in Channels and userId not in noBlockUsers:
-        x = 1
-        if len(msgParts) == 1:
-            if (len(msgParts) == Channels[chanId]['len'] - 1 and
-                msg == Channels[chanId]['py']):
-                # Completed 2-tier (baby) pyramid
-                await channel.send(
-                    "Baby pyramids don't count, you fucking degenerate.")
-            Channels[chanId]['py'] = msg
-            Channels[chanId]['len'] = 1
-        elif len(msgParts) == 1 + Channels[chanId]['len']:
-            Channels[chanId]['len'] += 1
-            for part in msgParts:
-                if part != Channels[chanId]['py']:
-                    # Pyramid broken
-                    delete(chanId)
-                    x = 0
-                    break
-            if x:
-                if Channels[chanId]['len'] == 3:
-                    # Pyramid peaks, block
-                    await channel.send("no")
-                    delete(chanId)
-        else:
-            # Pramid broken
-            delete(chanId)
-    elif len(msgParts) == 1:
-        # Pyramid start
-        Channels[chanId] = {'len': 1, 'py': msg}
+    def _is_mod(self, user):
+        try:
+            user = int(user)
+        except ValueError:
+            user = user[2:-1]
 
-    # Direct messages
-    if isinstance(channel, discord.abc.PrivateChannel):
-        if userId == Owner and com == '!send':
-            # Send message to specified channel using ID
-            if len(msgParts) >= 3:
-                await bot.get_channel(int(com2)).send(' '.join(msgParts[2:]))
+        return user in gvars.mods + [self.owner.id]
+
+    def reload_extension(self, ext):
+        importlib.reload(importlib.import_module(ext))
+        self.unload_extension(ext)
+        self.load_extension(ext)
+
+        return f"Reloaded extension `{ext}`."
+
+    def create_embed(self, ctx, colour=0x33baf9, title='', description=''):
+        embed = discord.Embed(colour=discord.Colour(colour),
+                              title=title,
+                              description=description)
+        embed.set_author(
+            name=f"{ctx.author.name}",
+            icon_url=ctx.author.avatar_url_as(static_format="png")
+        )
+        return embed
+
+    def error_embed(self, ctx, title='', description=''):
+        return self.create_embed(ctx, 0xe92323, title, description)
+
+    async def autoupdate10k(self, channel, chan_id, msg_id, msg=None):
+        try:
+            chan_id = int(chan_id)
+            msg_id = int(msg_id)
+        except ValueError:
+            return print(colored("Invalid input in autoupdate10k.json",
+                                 "red", attrs=["bold"]))
+
+        chan = self.get_channel(chan_id)
+
+        if not chan:
+            return print(f"Could not find discord channel {chan_id}")
+
+        message = await chan.fetch_message(msg_id)
+        followers = await get_followers(channel)
+
+        try:
+            followers = int(followers)
+        except ValueError:
+            return print(followers)
+
+        print(
+            f"Updating message with ID {msg_id} with `{msg}` every 5 minutes"
+        )
+
+        while True:
+            followers = await get_followers(channel)
+            left = 10000 - followers
+
+            if msg:
+                await message.edit(content=Template(msg).substitute(left=left))
             else:
-                await channel.send("Usage: `!send {channel id} {message}`")
+                await message.edit(content=f"{left} until 10k")
 
-    # If user is not the bot
-    if userId != bot.user.id:
-        # Handle commands
-        if com in commandsList:
-            await channel.send(commandsList[com])
-        elif time.time() - cooldown > 30:
-            # In_commands - if key is anywhere in message, not just beginning
-            for key in incomsList:
-                if key in msg.lower():
-                    await channel.send(incomsList[key])
-                    break
-            cooldown = time.time()
-        if com in ['color', 'colour'] and guildId == 311016926925029376:
-            # Requires "Manage Roles" permission
-            if com2:
-                cHex = com2.strip('#')
-                # Letters used in hexadecimals
-                # Used to find if hex code given is valid
-                hexLetters = ['a', 'b', 'c', 'd', 'e', 'f']
-                isHex = True
+            await asyncio.sleep(300)
 
-                for char in cHex:
-                    # Check if hex code is valid
-                    if not char.isdigit() and char not in hexLetters:
-                        isHex = False
-                        break
+    @property
+    def uptime(self):
+        time_now = datetime.datetime.utcnow()
+        time_delta = time_now - self.start_time
+        d = datetime.datetime(1, 1, 1) + time_delta
 
-                if isHex:
-                    await channel.send(f"{mention} Setting color to #{cHex}")
-                    for r in message.author.roles:
-                        # Check if user already has a color role
-                        # If so, remove it
-                        if r.name.startswith('#'):
-                            await message.author.remove_roles(r)
-                    roleFound = False
-                    for r in guild.roles:
-                        # Check if role for color already exists
-                        # If so, give user this roles instead of
-                        # Creating a new one
-                        if r.name == '#' + cHex:
-                            roleFound = True
-                            await message.author.add_roles(r)
-                            break
-                    if roleFound:
-                        # Creat and assign role to user if
-                        # no existing role found
-                        colorRole = await guild.create_role(name="#" + cHex,
-                            colour=discord.Colour(value=int(cHex, 16)))
-                        await colorRole.edit(position=len(guild.roles) - 8)
-                        await message.author.add_roles(colorRole)
-                    await channel.send(f"{mention} Set colour to #{cHex}")
-                else:
-                    await channel.send(f"{mention} Usage: `{com} [hex code]`")
-            else:
-                await channel.send(f"{mention} Usage: `{com} [hex code]`")
-        # Basic commands
-        elif com == '!fpcommands':
-            await channel.send(
-            f"{mention} Commands: {', '.join(commandsList.keys())}")
-        elif com == '!fpadmins':
-            await channel.send(f"{mention} Admins: {', '.join(userList)}")
-        elif com == '!fpincoms':
-            await channel.send(
-                f"{mention} In_commands: {', '.join(incomsList.keys())}")
-        elif com == '!fpmodcoms':
-            await channel.send(
-                f"{mention} Mod commands: {', '.join(modcomsList + modcoms)}")
-        elif com == '!nobully':
-            # NoBully
-            nobullyEmbed = discord.Embed(description="**Don't Bully!**")
-            nobullyEmbed.set_image(url="https://i.imgur.com/jv7O5aj.gif")
-            await channel.send(embed=nobullyEmbed)
+        days = f"{d.day - 1} day{plural(d.day - 1)}"
+        hours = f"{d.hour} hour{plural(d.hour)}"
+        minutes = f"{d.minute} minute{plural(d.minute)}"
+        seconds = f"{d.second} second{plural(d.second)}"
 
-    if userId in userList + admins:
-        # If user is a moderator or admin
-        if com == "!pyramid" and len(msgParts) >= 3:
-            # Send message an ascending and descending amount of time,
-            # Creating a 'pyramid'
-            p = ' '.join(msgParts[2:]) + ' '
-            pLen = int(com2) + 1
-            for i in range(1, pLen):
-                await channel.send(p * i)
-            for i in range(2, pLen):
-                await channel.send(p * (pLen - i))
-        elif com == "!fpdelmsg":
-            # Delete last {n} messages in channel
-            # Requires "Manage Messages" permission
-            if com2.isdigit():
-                com2 = int(com2)
-                async for m in channel.history(limit=com2):
-                    try:
-                        await m.delete()
-                    except discord.errors.Forbidden:
-                        print("Insufficient permissions")
-                        pass
-        elif com == "!fpaddcom":
-            # Add basic command
-            if len(msgParts) >= 3:
-                with open("commands.txt", "a") as commandsFile:
-                    commandsList[com2] = " ".join(msgParts[2:])
-                    commandsFile.write(' '.join(msgParts[1:]) + '\n')
-                await channel.send(f'{mention} Added command "{com2}"')
-            else:
-                await channel.send(
-                    f"{mention} Usage: `!fpaddcom [command] [output]`")
-        elif com == '!fpdelcom':
-            # Delete basic command
-            if len(msgParts) == 2:
-                if com2 in commandsList:
-                    del commandsList[com2]
-                    with open('commands.txt') as f:
-                        # Temporarily store data from file
-                        lines = f.readlines()
-                    with open("commands.txt", 'w') as commandsFile:
-                        # Wipe file and rewrite data to it,
-                        # Excluding certain unwanted lines
-                        for line in lines:
-                            try:
-                                if not line.split()[0] == com2:
-                                    commandsFile.write(line + '\n')
-                            except:
-                                pass
-                    await channel.send(f'{mention} Removed command "{com2}"')
-                else:
-                    await channel.send(
-                        f'{mention} Command "{com2}" doesn\'t exist')
-            else:
-                await channel.send("Usage: `!fpdelcom [command]`")
-        elif com == "!fpaddincom":
-            # Add in_command
-            with open("incoms.txt", "a") as incomsFile:
-                incomsFile.write(' '.join(msgParts[1:]) + '\n')
-                incomsList[com2] = ' '.join(msgParts[2:])
-            await channel.send(f'{mention} Added in_command "{com2}"')
-        elif com == '!fpdelincom':
-            # Delete in_command
-            if com2 in incomsList:
-                del incomsList[com2]
-                with open('incoms.txt') as f:
-                    # Temporarily store data from file
-                    lines = f.readlines()
-                with open("incoms.txt", "w") as incomsFile:
-                    # Wipe file and rewrite data to it,
-                    # Excluding certain unwanted lines
-                    for line in lines:
-                        if not line.split()[0] == com2:
-                            incomsFile.write(line + '\n')
-                await channel.send(f'{mention} Removed in_command "{com2}"')
-            else:
-                await channel.send(
-                    f'{mention} In_command "{com2}" doesn\'t exist')
-        elif com == '!fpaddmodcom':
-            # Add basic moderator command
-            with open("modcoms.txt", "a") as modcomsFile:
-                modcomsList[com2] = " ".join(msgParts[2:])
-                modcomsFile.write(' '.join(msgParts[1:] + '\n'))
-            await channel.send(f'{mention} Added mod command "{com2}"')
-        elif com == '!fpdelmodcom':
-            # Delete basic moderator command
-            if len(msgParts) == 2:
-                del modcomsList[com2]
-                with open('modcoms.txt') as f:
-                    # Temporarily store data from file
-                    lines = f.readlines()
-                with open("modcoms.txt", "w") as modcomsFile:
-                    # Wipe file and rewrite data to it,
-                    # Excluding certain unwanted lines
-                    for line in lines:
-                        if line:
-                            if not line.split()[0].lower() == com2:
-                                modcomsFile.write(line + '\n')
-                await channel.send(f'{mention} Deleted mod command "{com2}"')
-        elif com == '!fpdelroles':
-            # Requires "Manage Roles" permission.
-            # Doesn't usually delete all roles at once,
-            # requires multiple executions.
+        return f"{days}, {hours}, {minutes}, {seconds}"
 
-            # Commented code for debugging
-            roles = guild.roles
-            members = guild.members
-            # print("Roles:", (len(roles))
-            # print("Roles:", ', '.join([r.name for r in roles]))
-            usedRoles = []
-            for r in roles:
-                for u in members:
-                    if r in u.roles:
-                        usedRoles.append(r)
-                        break
-            # print("Used:", ', '.join([r.name for r in usedRoles]))
-            for r in usedRoles:
-                roles.remove(r)
-            # print("Unused:", ', '.join([r.name for r in roles]))
-            for r in roles:
-                await r.delete()
-                await channel.send('Deleted role "{r.name}".')
-            await channel.send("Deleted unused roles.")
-        elif com == '!fpreact':
-            # React to last {n} messages in channel with specificed emoji
-            num = int(com2)
-            if com3.isdigit():
-                # Get reaction emoji by ID
-                for em in bot.emojis():
-                    if em.id == com3:
-                        e = em
-                        async for i in channel.history(limit=num):
-                            await i.add_reaction(e)
-                        break
-            else:
-                # Get reaction emoji directly using string
-                e = com3
-                try:
-                    async for i in channel.history(limit=num):
-                        await i.add_reaction(e[2:-1])
-                except:
-                    await channel.send(
-                        '{mention} Usage: `!fpreact [n] [emote]`')
-        elif com == '!fpwhitelist':
-            # Whitelist user from pyramid blocking
-            if com2.isdigit():
-                noBlockUsers.append(com2)
-            else:
-                await channel.send(
-                    f'{mention} Usage: `!fpwhitelist [user id]`')
-        elif com == '!fpblacklist':
-            # Remove user from pyramid blocking whitelist
-            if com2.isdigit():
-                if com2 in noBlockUsers:
-                    noBlockUsers.remove(com2)
-                else:
-                    await channel.send(f'{mention} {com2} is not whitelisted')
-            else:
-                await channel.send(
-                    f'{mention} Usage: `!fpblacklist [user id]`')
+    @property
+    def memory_usage(self):
+        memory_usage = self.process.memory_full_info().uss / 1024 ** 2
+        return f"{memory_usage:.2f} MiB"
 
-        if com in modcomsList:
-            await channel.send(modcomsList[com])
-        elif com == "!s" and len(msgParts) >= 3:
-            # Send message [n] amount of times in a row
-            n = int(com2)
-            for i in range(n):
-                await channel.send(' '.join(msgParts[2:]))
-        elif com == "!fpstatus":
-            # Change playing/streaming/listening/watching status
-            await bot.change_presence(game=discord.Game(
-                name=' '.join(msgParts[2:]), type=int(com2)))
-            await channel.send(
-                f'{mention} Set game to "{" ".join(msgParts[2:])}"')
-        """
-        elif com == '!fpvoice':  # Incomplete
-            if len(msgParts) >= 2:
-                if com2 == 'join':
-                    # Join voice channel
-                    if len(msgParts) == 3:
-                        # Get voice channel by ID
-                        vChannel = bot.get_channel(int(com3))
-                    elif len(msgParts) == 2:
-                        # Get voice channel user is currently in
-                        vChannel = message.author.voice.channel
-                    voice = await vChannel.connect()
-                    await channel.send(f'Joined "{vChannel.name}"')
-                elif com2 == 'leave':
-                    # Leave voice channel
-                    for c in bot.voice_clients:
-                        if c.guild == guild:
-                            await voice.disconnect()
-                            await channel.send('Left "{vChannel.name}"')
-            else:
-                await channel.send('Missing argument: `join`, `leave`')
-        """
+    @property
+    def cpu_usage(self):
+        cpu_usage = self.process.cpu_percent() / psutil.cpu_count()
+        return f"{cpu_usage}%"
 
-    if userId in admins:
-        if com == "!fpadduser" and len(msgParts) == 2:
-            # Add user to moderator list
-            if message.mentions:
-                user = message.mentions[0].id
-            else:
-                user = int(com2)
-            with open("users.txt", "a", encoding='utf-8') as userFile:
-                userFile.write(str(user) + '\n')
-                userList.append(user)
-            await channel.send(f'{mention} Added {user} to moderators')
-        elif com == "!fpdeluser":
-            # Remove user from moderator list
-            if message.mentions:
-                user = message.mentions[0].id
-            else:
-                user = str(com2)
-            userList.remove(user)
-            with open('users.txt') as f:
-                # Temporarily store data from file
-                lines = f.readlines()
-            with open("users.txt", "w", encoding='utf-8') as userFile:
-                # Wipe file and rewrite data to it,
-                # Excluding certain unwanted lines
-                for line in lines:
-                    if line[:-1] != str(user):
-                        userFile.write(line)
-            await channel.send(f'{mention} Removed {user} from moderators.')
-        elif com == "!fpshutdown":
-            # Shut down bot completely
-            await channel.send('Shutting down client.')
-            await bot.close()
-        elif com == "!fpclear":
-            # Clear the bot's internal cache
-            bot.clear()
-            await channel.send('Internal cache cleared.')
 
-bot.run(token)
+if __name__ == "__main__":
+    gvars.init()
+
+    logger = logging.getLogger("discord")
+    handler = logging.FileHandler(
+        filename="log/discord.log", encoding="utf-8", mode="w")
+    handler.setFormatter(
+        logging.Formatter("%(asctime)s:%(levelname)s:%(name)s: %(message)s"))
+    logger.addHandler(handler)
+
+    startup_extensions = [
+        "cogs.modcoms",
+        "cogs.owner_coms",
+        "cogs.info",
+        "cogs.misc",
+        "cogs.twitch",
+        "extensions.events"
+    ]
+
+    gvars.commands = load_file("commands.json")
+    gvars.incoms = load_file("incoms.json")
+    gvars.mod_coms = load_file("modcoms.json")
+    gvars.mods = load_file("users.json")
+
+    bot = Bot()
+
+    loop = asyncio.get_event_loop()
+    bot.run(token)
