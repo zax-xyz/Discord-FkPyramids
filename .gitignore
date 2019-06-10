@@ -1,6 +1,9 @@
 old/*
 *__pycache__
-*.log
+log
 *.bak
 *.swp
 config_bak
+venv
+log
+*auth.py

@@ -1,17 +1,33 @@
+"""
+Copyright (C) 2018  Zaxutic
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <http://www.gnu.org/licenses/>.
+"""
+
 import asyncio
 import json
-from string import Template
 from pathlib import Path
 
 import discord
 from discord.ext import commands
 
 import global_settings as gvars
-from FkPyramids import load_file, send_mention, get_followers
-from twitch_bot import twitch_bot
+from FkPyramids import load_file, send_mention
 
 
-class Mod_Commands:
+class Mod(commands.Cog):
+
     """Can only be used by FkPyramids moderators"""
 
     def __init__(self, bot):
@@ -19,25 +35,61 @@ class Mod_Commands:
         self.types = {"playing": 1, "listening": 2, "watching": 3}
         self.autoupdate = load_file("autoupdate10k.json")
 
-    def __global_check(self, ctx):
-        return ctx.message.author.id in gvars.mods or commands.is_owner()
+    def __local_check(self, ctx):
+        return self.bot._is_mod(ctx.author.id)
 
     def dump(self, filename, txt):
         path = Path.cwd().joinpath("config", filename)
         with path.open(mode="w") as f:
             json.dump(txt, f, indent=2)
 
+    async def com_update(self, ctx, txt, com):
+        await ctx.send(embed=self.bot.create_embed(
+            ctx,
+            title=txt,
+            description=f"{txt} `{com}`."
+        ))
+
+    async def com_not_found(self, ctx, com_type, com):
+        await ctx.send(embed=self.bot.error_embed(
+            ctx,
+            title=f"{com_type} not found",
+            description=f"{com_type} `{com}` doesn't seem to exist."
+        ))
+
     @commands.command()
     async def pyramid(self, ctx, length: int, *, message: str):
-        """Creates pyramids."""
+        """
+        Creates pyramids.
+
+        Examples:
+          pyramid 3 peepoS
+            Returns:
+              peepoS
+              peepoS peepoS
+              peepoS peepoS peepoS
+              peepoS peepoS
+              peepoS
+
+          pyramid 2 yikes
+            Returns:
+              yikes
+              yikes yikes
+              yikes
+
+        Note:
+          Discord's rate limits only allow bots to send 5 messages per 5
+          seconds.
+        """
         message += " "
-        for i in [length - abs(i) for i in range(-length + 1, length)]:
-            await ctx.send(message * i)
+        lst = [length - abs(i) for i in range(-length + 1, length)]
+        for i in lst:
+            asyncio.ensure_future(ctx.send(message * i))
 
     @commands.command()
     async def delmsg(self, ctx, n: int):
         """
-        Deletes messages.
+        Deletes <n> messages.
 
         Requires "Manage Messages" permission
         """
@@ -47,75 +99,171 @@ class Mod_Commands:
             except discord.errors.Forbidden:
                 print("Insufficient permissions")
 
-    @commands.command()
+    @commands.group(aliases=["com"])
+    async def command(self, ctx):
+        """Manage custom commands."""
+        if ctx.invoked_subcommand is None:
+            await ctx.send(embed=self.bot.error_embed(
+                ctx,
+                title="Invalid command passed",
+                description="An invalid subcommand was passed."
+            ))
+
+    @command.command(name="add")
     async def addcom(self, ctx, command: str, *, output: str):
         """Adds a command."""
         gvars.commands[command] = output
         self.dump("commands.json", gvars.commands)
 
-        await send_mention(ctx, f'Added command "{command}"')
+        await self.com_update(ctx, "Added command", command)
 
-    @commands.command()
+    @command.command(name="delete")
     async def delcom(self, ctx, command: str):
         """
         Deletes command.
-        
+
         Only works for user-added commands.
         """
-        if command in gvars.commands:
+        try:
             del gvars.commands[command]
+        except KeyError:
+            await self.com_not_found(ctx, "Command", command)
+        else:
             self.dump("commands.json", gvars.commands)
 
-            await send_mention(ctx, f'Removed command "{command}"')
-        else:
-            await send_mention(ctx, f'Command "{command}" doesn\'t exist')
+            await self.com_update(ctx, "Removed command", command)
 
-    @commands.command()
+    @command.command(name="edit")
+    async def editcom(self, ctx, command: str, *, output: str):
+        """Edits command."""
+        gvars.commands[command] = output
+        self.dump("commands.json", gvars.commands)
+
+        await self.com_update(ctx, "Edited command", command)
+
+    @command.command(name="rename")
+    async def renamecom(self, ctx, old: str, new: str):
+        """Renames command."""
+        try:
+            gvars.commands[new] = gvars.commands[old]
+        except KeyError:
+            await self.com_not_found(ctx, "Command", old)
+        else:
+            del gvars.commands[old]
+            self.dump("commands.json", gvars.commands)
+
+            await self.com_update(ctx, "Renamed command", old)
+
+    @commands.group()
+    async def incom(self, ctx):
+        """Manage in_commands."""
+        if ctx.invoked_subcommand is None:
+            await ctx.send(embed=self.bot.error_embed(
+                ctx,
+                title="Invalid command passed",
+                description="An invalid subcommand was passed."
+            ))
+
+    @incom.command(name="add")
     async def addincom(self, ctx, in_com: str, *, output: str):
         """Adds in_command."""
         gvars.incoms[in_com] = output
         self.dump("incoms.json", gvars.incoms)
 
-        await send_mention(ctx, f'Added in_command "{in_com}"')
+        await self.com_update(ctx, "Added in_command", in_com)
 
-    @commands.command()
+    @incom.command(name="delete")
     async def delincom(self, ctx, in_com: str):
         """Deletes in_command."""
-        if in_com in gvars.incoms:
-            del gvars.incoms[in_command]
-            self.dump("incoms.json", gvars.incos)
-
-            await send_mention(ctx, f'Removed in_command "{in_com}"')
+        try:
+            del gvars.incoms[in_com]
+        except KeyError:
+            await self.com_not_found(ctx, "In_command", in_com)
         else:
-            await send_mention(ctx, f'In_command "{in_com}" doesn\'t exist')
+            self.dump("incoms.json", gvars.incoms)
 
-    @commands.command()
+            await self.com_update(ctx, "Removed in_command", in_com)
+
+    @incom.command(name="edit")
+    async def editincom(self, ctx, in_com: str, *, output: str):
+        """Edits in_command."""
+        gvars.incoms[in_com] = output
+        self.dump("incoms.json", gvars.incoms)
+
+        await self.com_update(ctx, "Edited in_command", in_com)
+
+    @incom.command(name="rename")
+    async def rename_incom(self, ctx, old: str, new: str):
+        """Renames in_command."""
+        try:
+            gvars.incoms[new] = gvars.incoms[old]
+        except KeyError:
+            await self.com_not_found(ctx, "In_command", old)
+        else:
+            del gvars.incoms[old]
+            self.dump("incoms.json", gvars.incoms)
+
+            await self.com_update(ctx, "Renamed in_command", old)
+
+    @commands.group()
+    async def modcom(self, ctx):
+        """Manage mod commands."""
+        if ctx.invoked_subcommand is None:
+            await ctx.send(embed=self.bot.error_embed(
+                ctx,
+                title="Invalid command passed",
+                description="An invalid subcommand was passed."
+            ))
+
+    @modcom.command(name="add")
     async def addmodcom(self, ctx, command: str, *, output: str):
-        """Add mod commmand."""
+        """Adds mod commmand."""
         gvars.mod_coms[command] = output
         self.dump("modcoms.json", gvars.mod_coms)
 
-        await channel.send(f'{mention} Added mod command "{command}"')
+        await self.com_update(ctx, "Added mod command", command)
 
-    @commands.command()
+    @modcom.command(name="delete")
     async def delmodcom(self, ctx, command: str):
         """
-        Delete mod command.
-        
+        Deletes mod command.
+
         (Only works for user-added mod commands)
         """
-        if modcom in gvars.mod_coms:
+        try:
             del gvars.mod_coms[command]
+        except KeyError:
+            await self.com_not_found(ctx, "Mod command", command)
+        else:
             self.dump("modcoms.json", gvars.mod_coms)
 
-            await send_mention(ctx, f'Deleted mod command "{command}"')
+            await self.com_update(ctx, "Deleted mod command", command)
+
+    @modcom.command(name="edit")
+    async def editmodcom(self, ctx, command: str, *, output: str):
+        """Edit mod command."""
+        gvars.mod_coms[command] = output
+        self.dump("modcoms.json", gvars.mod_coms)
+
+        await self.com_update(ctx, "Edited mod command", command)
+
+    @modcom.command(name="rename")
+    async def rename_modcom(self, ctx, old: str, new: str):
+        """Renames in_command."""
+        try:
+            gvars.mod_coms[new] = gvars.mod_coms[old]
+        except KeyError:
+            await self.com_not_found(ctx, "Mod command", old)
         else:
-            send_mention(ctx, f'Mod command "{command}" doesn\'t exist')
+            del gvars.mod_coms[old]
+            self.dump("modcoms.json", gvars.mod_coms)
+
+            await self.com_update(ctx, "Renamed mod command", old)
 
     @commands.command()
     async def delroles(self, ctx):
         """
-        Delete all unused roles in server.
+        Deletes all unused roles in server.
 
         Requires "Manage Roles" permission.
         """
@@ -127,49 +275,83 @@ class Mod_Commands:
         await ctx.send("Deleted unused roles.")
 
     @commands.command()
-    async def react(self, ctx, n: int, em: str):
+    async def react(self, ctx, n: int, emoji: str):
         """
-        Add reaction to last [n] messages in channel.
-        
-        Takes emoji as ID or string
-        """
-        if em.isdigit():
-            # Get emoji by ID
-            em = discord.utils.get(bot.emojis(), id=int(em))
+        Add reaction to last <n> messages in channel.
 
-            if em:
+        Takes emoji as ID, directly, or as the name.
+
+        Examples:
+          react 10 peepoS
+          react 10 458944535578411010
+          react 10 🤔
+          react 10 <:thinkHang:458944535578411010>
+        """
+        if emoji.isdigit():
+            # Get emoji by ID
+            emoji = discord.utils.get(self.bot.emojis, id=int(emoji))
+
+            if emoji:
                 async for i in ctx.history(limit=n):
-                    await i.add_reaction(em)
+                    await i.add_reaction(emoji)
             else:
                 await send_mention(ctx, "Could not find emote")
         else:
             # Get emoji directly using string
-            try:
-                async for i in ctx.history(limit=n):
-                    await i.add_reaction(em[2:-1])
-            except (discord.errors.NotFound, discord.errors.InvalidArgument):
-                await send_mention(ctx, "Usage: `!fpreact [n] [emote]`")
-            except discord.errors.Forbidden:
-                await send_mention(ctx, "Could not react to message.")
+            if emoji[0] == "<" and emoji[-1] == ">":
+                emoji = emoji[2:-1]
+            else:
+                emoji_get = discord.utils.get(self.bot.emojis, name=emoji)
+                if emoji_get:
+                    emoji = emoji_get
+                else:
+                    emoji = emoji
 
-    @commands.command()
-    async def whitelist(self, ctx, user: int):
+            async for i in ctx.history(limit=n):
+                await i.add_reaction(emoji)
+
+    @commands.group()
+    async def whitelist(self, ctx):
+        """Manage pyramid blocking whitelist."""
+        if ctx.invoked_subcommand is None:
+            await ctx.send(embed=self.bot.error_embed(
+                ctx,
+                title="Invalid command passed",
+                description="An invalid subcommand was passed."
+            ))
+
+    @whitelist.command(name="add")
+    async def add_whitelist(self, ctx, user: int):
         """Whitelist user from pyramid blocking."""
         gvars.no_block_users.append(user)
 
-    @commands.command()
-    async def blacklist(self, ctx, user: int):
+    @whitelist.command(name="remove")
+    async def del_blacklist(self, ctx, user: int):
         """Remove user from pyramid blocking whitelist."""
-        if user in no_block_users:
+        if user in gvars.no_block_users:
             gvars.no_block_users.remove(user)
         else:
             await send_mention(ctx, f"{user} is not whitelisted")
 
     @commands.command()
-    async def s(self, ctx, n: int, message: str):
-        """Send message [n] amount of times in a row."""
+    async def s(self, ctx, n: int, *, message: str):
+        """
+        Send message <n> amount of times in a row.
+
+        Note:
+          Discord's rate limits only allow bots to send 5 messages per 5
+          seconds.
+        """
         for i in range(n):
             await ctx.send(message)
+
+    @commands.command()
+    async def sayd(self, ctx, *, message: str):
+        """
+        Sends a message then deletes the message that invoked the command.
+        """
+        await ctx.message.delete()
+        await ctx.send(message)
 
     @commands.command()
     async def status(self, ctx, activity_type: str, *, name: str):
@@ -192,121 +374,15 @@ class Mod_Commands:
             else:
                 return await send_mention(ctx, "Invalid type")
 
-        await bot.change_presence(
+        await self.bot.change_presence(
             activity=discord.Activity(name=name, type=activity_type)
         )
-        await send_mention(ctx, f'Set activity to "{name}"')
-
-    @commands.command()
-    async def whenis10k(self, ctx, channel: str, *, msg: str=None):
-        """
-        Returns how many followers until 10k.
-
-        Takes a Twitch channel and looks up how far they are from 10k folllowers.
-        Optionally can take a message format, formatted with ${left}.
-
-
-        Examples:
-          fp!whenis10k ninten866:
-            Gets how far ninten866 is from 10k, in format `${left} until 10k`.
-
-          fp!whenis10k ninten866 Only ${left} left until 10k Pog:
-            Same as above, but in format `Only ${left} left until 10k Pog`.
-        """
-        followers = await twitch_bot.get_followers(channel)
-
-        try:
-            followers = int(followers)
-        except ValueError:
-            return await ctx.send(followers)
-
-        left = 10000 - followers
-
-        if msg:
-            return await ctx.send(Template(msg).substitute(left=left))
-
-        await ctx.send(f"{left} until 10k")
-
-    @commands.command()
-    async def update10k(self, ctx, channel: str, ID: int, *, msg: str=None):
-        """Update 10k message by ID."""
-        followers = await self.get_followers(channel)
-
-        try:
-            followers = int(followers)
-        except ValueError:
-            return await ctx.send(followers)
-
-        left = 10000 - followers
-        message = await ctx.get_message(ID)
-
-        if msg:
-            return await message.edit(
-                    content=Template(msg).substitute(left=left)
-                )
-        await message.edit(content=f"{left} until 10k")
-
-    @commands.command()
-    async def autoupdate10k(self, ctx, channel, chan_id, msg_id, *, msg=None):
-        """Automatically update 10k message by ID."""
-        try:
-            chan_id = int(chan_id)
-            msg_id = int(msg_id)
-        except ValueError:
-            return await ctx.send("Invalid input")
-
-        chan = self.bot.get_channel(chan_id)
-
-        if not chan:
-            return await ctx.send("Could not find discord channel")
-
-        message = await chan.get_message(msg_id)
-        followers = await get_followers(channel)
-
-        try:
-            followers = int(followers)
-        except ValueError:
-            return await ctx.send(followers)
-
-        if chan_id in self.autoupdate:
-            self.autoupdate[chan_id][msg_id] = (channel, msg)
-        else:
-            self.autoupdate[chan_id] = {msg_id: (channel, msg)}
-
-        self.dump("autoupdate10k.json", self.autoupdate)
-        await ctx.send(
-            f"Updating message with ID {msg_id} with {msg} every 5 minutes"
-        )
-
-        while True:
-            followers = await get_followers(channel)
-            left = 10000 - followers
-
-            if msg:
-                await message.edit(content=Template(msg).substitute(left=left))
-            else:
-                await message.edit(content=f"{left} until 10k")
-
-            await asyncio.sleep(300)
-
-    @commands.command()
-    async def delautoupdate(self, ctx, msg_ID, channel_ID=None):
-        """Remove message from 10k auto update."""
-        if not channel_ID:
-            channel_ID = ctx.channel.id
-
-        del self.autoupdate[channel_ID][msg_ID]
-
-        if not self.autoupdate[channel_ID]:
-            del self.autoupdate[channel_ID]
-
-        self.dump("autoupdate10k.json", self.autoupdate)
-        await ctx.send(
-            "Removed message {} in channel {} from auto update".format(
-                msg_ID, channel_ID
-            )
-        )
+        await ctx.send(embed=self.bot.create_embed(
+            ctx,
+            title="Set activity",
+            description=f'Set activity to "{name}"'
+        ))
 
 
 def setup(bot):
-    bot.add_cog(Mod_Commands(bot))
+    bot.add_cog(Mod(bot))
