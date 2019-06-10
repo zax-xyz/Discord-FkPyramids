@@ -2,6 +2,7 @@
 
 # DiscordFkPyramids
 Discord bot designed to automatically block pyramids after the third message, with other features/functionality.
+
 NOTE: Although it was t original design intention, the pyramid blocking functionally has since been removed. Yes, I know the name of the bot doesn't make sense anymore. No, I probably won't change it :)
 
 ## Dependencies
