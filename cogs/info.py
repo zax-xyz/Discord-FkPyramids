@@ -186,7 +186,7 @@ class Info(commands.Cog):
             )
             embed.set_footer(text=cog.description)
             for command in cog.get_commands():
-                if not command.hidden:
+                if not command.hidden and await command.can_run():
                     embed.add_field(
                         name=f"{command} {command.signature}",
                         value=command.short_doc,
