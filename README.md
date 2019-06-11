@@ -23,7 +23,7 @@ $ python3 FkPyramids.py
 ```
 
 ## Development
-All major development goes into the [dev](https://github.com/zaxutic/Discord-FkPyramids/tree/dev/) branch before being merged into this branch (README in dev branch will likely be updated very infrequently and only updated when changes are merged into the [rewrite](https://github.com/zaxutic/Discord-FkPyramids/tree/rewrite/) branch.
+All major development goes into the [dev](https://github.com/zaxutic/Discord-FkPyramids/tree/dev/) branch before being merged into the rewrite branch (README in dev branch will likely be updated infrequently and usually only updated when changes are merged into the [rewrite](https://github.com/zaxutic/Discord-FkPyramids/tree/rewrite/) branch.
 
 ## License
 This project is licensed under the GNU General Public License v3.0. See [LICENSE](https://github.com/zaxutic/Discord-FkPyramids/tree/rewrite/LICENSE) for more information.
