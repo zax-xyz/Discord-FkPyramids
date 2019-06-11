@@ -151,7 +151,7 @@ class Info(commands.Cog):
             timestamp=datetime.utcnow()
         )
         embed.set_author(name=ctx.bot.owner, icon_url=ctx.bot.owner.avatar_url)
-        embed.set_footer(f"See {prefix}help for available commands")
+        embed.set_footer(f"See {ctx.prefix}help for available commands")
         await ctx.send(embed=embed)
 
     @commands.command()
