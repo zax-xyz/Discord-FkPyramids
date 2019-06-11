@@ -109,7 +109,7 @@ class Bot(commands.Bot):
 
         return f"Reloaded extension `{ext}`."
 
-    def create_embed(self, ctx, colour=0x33baf9, title='', description=''):
+    def create_embed(self, ctx, colour=0x6da1e7, title='', description=''):
         embed = discord.Embed(colour=discord.Colour(colour),
                               title=title,
                               description=description)
