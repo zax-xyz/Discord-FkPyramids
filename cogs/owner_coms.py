@@ -186,8 +186,10 @@ class Owner(commands.Cog):
             link = await haste(out)
             return await ctx.send(link)
 
-        if block:
+        if block == 1:
             await ctx.send(f"```\n{out}\n```")
+        elif block == 2:
+            await ctx.send(f"```python\n{out}\n```")
         else:
             await ctx.send(out)
 
