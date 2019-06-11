@@ -175,8 +175,10 @@ class Info(commands.Cog):
                 coms = sorted(self.bot.get_cog(cog).get_commands(), key=str)
                 if not coms:
                     continue
-                value = ", ".join(f"`{com}`" for com in coms if not com.hidden
-                                  and await com.can_run(ctx))
+                value = ", ".join(
+                    f"`{com}`" for com in coms if not com.hidden and
+                    await com.can_run(ctx)
+                )
                 embed.add_field(name=cog, value=value, inline=False)
             await ctx.send(embed=embed)
         elif com in self.bot.cogs:
