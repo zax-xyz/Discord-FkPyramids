@@ -140,8 +140,7 @@ class Events(commands.Cog):
                                       file=sys.stderr)
 
             if ctx.author != self.bot.owner and ctx.invoked_with != "eval":
-                out = ("Unknown error occurred in execution. "
-                       " (Please notify bot creator (Zax#9935))")
+                out = "Unknown error occurred in execution. "
             else:
                 out = "Exception occured in execution."
 
