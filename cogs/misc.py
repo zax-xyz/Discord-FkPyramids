@@ -203,7 +203,7 @@ class Misc(commands.Cog):
     @commands.command(aliases=["user", "user_info", "user-info"])
     async def userinfo(self, ctx, user: discord.Member):
         """Returns information about a user."""
-        embed = discord.Embed()
+        embed = discord.Embed(colour=user.colour)
         embed.set_author(name=user, icon_url=user.avatar_url)
         embed.add_field(name="Display name", value=user.display_name)
         embed.add_field(name="ID", value=user.id)
