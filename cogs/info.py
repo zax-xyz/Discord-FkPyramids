@@ -145,7 +145,7 @@ class Info(commands.Cog):
                         "purpose of was to block pyramids, however the "
                         "focus of the bot has shifted away from that and "
                         "has now had several unrelated functionalities "
-                        "built into it. Yes, I know the name of the bot"
+                        "built into it. Yes, I know the name of the bot "
                         "doesn't really make sense now that it is no "
                         "longer focused on that :)",
             timestamp=datetime.utcnow()
