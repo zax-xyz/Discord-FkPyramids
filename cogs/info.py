@@ -141,13 +141,13 @@ class Info(commands.Cog):
         """Displays information regarding bot and its creation."""
         embed = discord.Embed(
             title="About",
-            description="This is a bot made by Zaxuwu#9935. The original "
-                        "purpose of was to block pyramids, however the "
-                        "focus of the bot has shifted away from that and "
-                        "has now had several unrelated functionalities "
-                        "built into it. Yes, I know the name of the bot "
-                        "doesn't really make sense now that it is no "
-                        "longer focused on that :)",
+            description="This is a bot made by <@135678905028706304>. The "
+                        "original purpose of was to block pyramids, however "
+                        "the focus of the bot has shifted away from that and "
+                        "has now had several unrelated functionalities built "
+                        "into it. Yes, I know the name of the bot doesn't "
+                        "really make sense now that it is no longer focused on"
+                        " that :)",
             timestamp=datetime.utcnow()
         )
         embed.set_author(name=ctx.bot.owner, icon_url=ctx.bot.owner.avatar_url)
