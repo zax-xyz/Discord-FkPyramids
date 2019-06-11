@@ -216,9 +216,17 @@ class Misc(commands.Cog):
             name="Account creation date",
             value=user.created_at.strftime("%b %-d %Y %-H:%M (UTC)")
         )
+
+        if user.bot:
+            value = "Can't determine"
+        elif user.is_avatar_animated():
+            value = "Rich"
+        else:
+            value = "Probably broke"
+
         embed.add_field(
             name="Socioeconomic status",
-            value="Rich" if user.is_avatar_animated() else "Probably broke"
+            value=value
         )
 
         await ctx.send(embed=embed)
