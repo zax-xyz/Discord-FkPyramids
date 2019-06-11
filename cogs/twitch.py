@@ -16,7 +16,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
 import asyncio
-from mako import Template
+from string import Template
 
 from discord.ext import commands
 
