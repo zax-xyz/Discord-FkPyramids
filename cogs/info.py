@@ -181,13 +181,14 @@ class Info(commands.Cog):
                 return await ctx.send("Command not found.")
             embed = discord.Embed(
                 title=f"**{com}**",
+                timestamp=datetime.utcnow()
             )
             try:
                 subcommands = command.commands
             except AttributeError:
                 embed.description = command.help
             else:
-                embed.description = f"*{command.help}*"
+                embed.set_footer(text=command.help)
                 for command in subcommands:
                     embed.add_field(
                         name=f"{command} {command.signature}",
