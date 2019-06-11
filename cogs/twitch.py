@@ -15,7 +15,9 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 """
 
-import discord
+import asyncio
+from mako import Template
+
 from discord.ext import commands
 
 from twitch_client import twitch_client
@@ -38,22 +40,20 @@ class Twitch(commands.Cog):
 
         await ctx.send(followers)
 
-    @commands.group(name="10k")
+    @commands.group(name="10k", invoke_without_command=True)
     async def _10k(self, ctx):
         """Set of 10k follower commands for Twitch."""
-        if ctx.invoked_subcommand is None:
-            await ctx.send(embed=self.bot.error_embed(
-                ctx,
-                title="Invalid command passed",
-                description="An invalid subcommand was passed."
-            ))
+        await ctx.send(embed=self.bot.error_embed(
+            ctx,
+            title="Invalid command passed",
+            description="An invalid subcommand was passed."
+        ))
 
     @_10k.command(name="when")
     async def whenis10k(self, ctx, channel: str, *, msg: str=None):
         """
-        Returns how many followers until 10k.
+        Returns how far a Twitch channel is from 10k followers.
 
-        Takes a Twitch channel and looks up how far they are from 10k folllowers.
         Optionally can take a message format, formatted with ${left}.
 
 
@@ -77,7 +77,7 @@ class Twitch(commands.Cog):
         await ctx.send(f"{left} until 10k")
 
     @_10k.command(name="update")
-    async def update10k(self, ctx, channel: str, ID: int, *, msg: str=None):
+    async def update10k(self, ctx, channel: str, id: int, *, msg: str=None):
         """Update 10k message by ID."""
         try:
             followers = await twitch_client.get_followers(channel)
@@ -85,7 +85,7 @@ class Twitch(commands.Cog):
             return await ctx.send(f"Could not get followers for {channel}")
 
         left = 10000 - followers
-        message = await ctx.get_message(ID)
+        message = await ctx.get_message(id)
 
         if msg:
             return await message.edit(
@@ -110,7 +110,7 @@ class Twitch(commands.Cog):
 
         message = await chan.get_message(msg_id)
         try:
-            followers = await get_followers(channel)
+            followers = await twitch_client.get_followers(channel)
         except IndexError:
             return await ctx.send(f"Could not get followers for {channel}")
 
@@ -127,7 +127,7 @@ class Twitch(commands.Cog):
         )
 
         while True:
-            followers = await get_followers(channel)
+            followers = await twitch_client.get_followers(channel)
             left = 10000 - followers
 
             if msg:
@@ -138,20 +138,20 @@ class Twitch(commands.Cog):
             await asyncio.sleep(300)
 
     @_10k.command(name="delete")
-    async def delautoupdate(self, ctx, msg_ID, channel_ID=None):
+    async def delautoupdate(self, ctx, msg_id, channel_id=None):
         """Remove message from 10k auto update."""
-        if not channel_ID:
-            channel_ID = ctx.channel.id
+        if not channel_id:
+            channel_id = ctx.channel.id
 
-        del self.autoupdate[channel_ID][msg_ID]
+        del self.autoupdate[channel_id][msg_id]
 
-        if not self.autoupdate[channel_ID]:
-            del self.autoupdate[channel_ID]
+        if not self.autoupdate[channel_id]:
+            del self.autoupdate[channel_id]
 
         self.dump("autoupdate10k.json", self.autoupdate)
         await ctx.send(
             "Removed message {} in channel {} from auto update".format(
-                msg_ID, channel_ID
+                msg_id, channel_id
             )
         )
 
