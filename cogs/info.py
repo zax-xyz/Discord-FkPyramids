@@ -171,14 +171,16 @@ class Info(commands.Cog):
                      f"command. You can also type {prefix}help category for"
                      "more information on a category."
             )
+
             for cog in sorted(self.bot.cogs):
                 coms = sorted(self.bot.get_cog(cog).get_commands(), key=str)
                 if not coms:
                     continue
-                value = ", ".join(
-                    f"`{com}`" for com in coms if not com.hidden and
-                    await com.can_run(ctx)
-                )
+
+                def check(com):
+                    return not com.hidden and await com.can_run(ctx)
+
+                value = ", ".join(f"`{com}`" for com in coms if check(com))
                 embed.add_field(name=cog, value=value, inline=False)
             await ctx.send(embed=embed)
         elif com in self.bot.cogs:
@@ -188,6 +190,7 @@ class Info(commands.Cog):
                 timestamp=datetime.utcnow()
             )
             embed.set_footer(text=cog.description)
+
             for command in cog.get_commands():
                 if not command.hidden and await command.can_run(ctx):
                     embed.add_field(
@@ -195,6 +198,7 @@ class Info(commands.Cog):
                         value=command.short_doc,
                         inline=False
                     )
+
             await ctx.send(embed=embed)
         else:
             command = self.bot.get_command(com)
@@ -204,6 +208,7 @@ class Info(commands.Cog):
                 title=f"**{com}**",
                 timestamp=datetime.utcnow()
             )
+
             try:
                 subcommands = command.commands
             except AttributeError:
