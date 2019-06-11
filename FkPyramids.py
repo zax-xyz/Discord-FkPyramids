@@ -120,7 +120,7 @@ class Bot(commands.Bot):
         return embed
 
     def error_embed(self, ctx, title='', description=''):
-        return self.create_embed(ctx, 0xe92323, title, description)
+        return self.create_embed(ctx, 0xe43535, title, description)
 
     async def autoupdate10k(self, channel, chan_id, msg_id, msg=None):
         try:
