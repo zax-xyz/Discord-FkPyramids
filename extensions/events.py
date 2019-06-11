@@ -275,7 +275,7 @@ class Events(commands.Cog):
 
         # Custom commands
         com = msg_parts[0].lower()
-        if time.time() - self.com_cooldown > 30:
+        if time.time() - self.com_cooldown > 10:
             if user_id in gvars.mods and com in gvars.mod_coms:
                 self.com_cooldown = time.time()
                 return await channel.send(gvars.mod_coms[com])
@@ -287,7 +287,7 @@ class Events(commands.Cog):
                 return await channel.send("make")
 
         # In_commands
-        if time.time() - self.incom_cooldown > 30:
+        if time.time() - self.incom_cooldown > 15:
             keys = (k for k in gvars.incoms if k in msg.lower())
 
             if keys:
