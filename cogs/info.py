@@ -207,6 +207,7 @@ class Info(commands.Cog):
                 title=f"**{com}**",
                 timestamp=datetime.utcnow()
             )
+            embed.set_footer(text=command.short_doc)
 
             embed.add_field(name="Name", value=command.name)
 
@@ -215,10 +216,9 @@ class Info(commands.Cog):
 
             embed.add_field(name="Category", value=command.cog_name)
 
-            aliases = command.aliases
-            embed.add_field(
-                name="Aliases", value=", ".join(aliases) if aliases else "None"
-            )
+            if command.aliases:
+                embed.add_field(name="Aliases",
+                                value=", ".join(command.aliases))
 
             try:
                 subcommands = command.commands
@@ -228,11 +228,10 @@ class Info(commands.Cog):
                                 inline=False)
                 embed.description = command.help
             else:
-                embed.set_footer(text=command.help)
                 for command in subcommands:
                     embed.add_field(
                         name=f"{command} {command.signature}",
-                        value=command.help,
+                        value=command.short_doc,
                         inline=False
                     )
 
