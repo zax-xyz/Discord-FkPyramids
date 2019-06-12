@@ -213,7 +213,7 @@ class Info(commands.Cog):
             if command.parent:
                 embed.add_field(name="Parent", value=command.parent)
 
-            embed.add_field(name="Category", value=cog_name)
+            embed.add_field(name="Category", value=command.cog_name)
 
             aliases = command.aliases
             embed.add_field(
