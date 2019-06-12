@@ -55,14 +55,7 @@ class Twitch(commands.Cog):
         Returns how far a Twitch channel is from 10k followers.
 
         Optionally can take a message format, formatted with ${left}.
-
-
-        Examples:
-          whenis10k ninten866:
-            Gets how far ninten866 is from 10k, in format "${left} until 10k".
-
-          whenis10k ninten866 Only ${left} left until 10k Pog:
-            Same as above, but in format "Only ${left} left until 10k Pog".
+        Defaults to format "${left} until 10k".
         """
         try:
             followers = await twitch_client.get_followers(channel)

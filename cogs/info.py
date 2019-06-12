@@ -223,9 +223,11 @@ class Info(commands.Cog):
             try:
                 subcommands = command.commands
             except AttributeError:
-                embed.add_field(name="Usage",
-                                value=f"```\n{com} {command.signature}```",
-                                inline=False)
+                embed.add_field(
+                    name="Usage",
+                    value=f"```\n{ctx.prefix}{com} {command.signature}```",
+                    inline=False
+                )
                 embed.description = command.help
             else:
                 for command in subcommands:
