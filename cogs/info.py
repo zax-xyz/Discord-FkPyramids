@@ -207,12 +207,14 @@ class Info(commands.Cog):
                 timestamp=datetime.utcnow()
             )
             aliases = command.aliases
+            embed.add_field(name="Name", value=command.name)
             embed.add_field(name="Parent", value=command.parent)
             embed.add_field(
                 name="Aliases", value=", ".join(aliases) if aliases else "None"
             )
             embed.add_field(name="Usage",
-                            value=f"```\n{command.signature}```")
+                            value=f"```\n{command.signature}```",
+                            inline=False)
 
             try:
                 subcommands = command.commands
