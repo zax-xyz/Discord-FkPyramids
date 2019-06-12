@@ -57,7 +57,7 @@ class Mod(commands.Cog):
             description=f"{com_type} `{com}` doesn't seem to exist."
         ))
 
-    @commands.command()
+    @commands.command(aliases=["py"])
     async def pyramid(self, ctx, length: int, *, message: str):
         """
         Creates pyramids.

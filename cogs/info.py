@@ -37,7 +37,7 @@ class Info(commands.Cog):
         self.bot = bot
         bot.remove_command("help")
 
-    @commands.command(name="commands")
+    @commands.command(name="commands", aliases=["coms"])
     async def _commands(self, ctx):
         """Displays available user-added commands."""
 

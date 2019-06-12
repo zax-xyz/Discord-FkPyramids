@@ -128,7 +128,7 @@ class Misc(commands.Cog):
 
         return quote, index
 
-    @commands.group(aliases=["gx_quote", "gx-quote"])
+    @commands.group(aliases=["gx_quote", "gx-quote", "gx"])
     async def gxquote(self, ctx):
         """
         Get random quote from gxmwp.
