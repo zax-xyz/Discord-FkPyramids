@@ -202,23 +202,30 @@ class Info(commands.Cog):
             command = self.bot.get_command(com)
             if command is None:
                 return await ctx.send("Command not found.")
+
             embed = discord.Embed(
                 title=f"**{com}**",
                 timestamp=datetime.utcnow()
             )
-            aliases = command.aliases
+
             embed.add_field(name="Name", value=command.name)
-            embed.add_field(name="Parent", value=command.parent)
+
+            if command.parent:
+                embed.add_field(name="Parent", value=command.parent)
+
+            embed.add_field(name="Category", value=cog_name)
+
+            aliases = command.aliases
             embed.add_field(
                 name="Aliases", value=", ".join(aliases) if aliases else "None"
             )
-            embed.add_field(name="Usage",
-                            value=f"```\n{command.signature}```",
-                            inline=False)
 
             try:
                 subcommands = command.commands
             except AttributeError:
+                embed.add_field(name="Usage",
+                                value=f"```\n{com} {command.signature}```",
+                                inline=False)
                 embed.description = command.help
             else:
                 embed.set_footer(text=command.help)
